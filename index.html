@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2025 Federal &amp; Colorado Tax Filing Wizard</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-title">
+      Tax Filing Wizard <span>Tax Year 2025 · Federal &amp; Colorado</span>
+    </div>
+    <div class="progress-container">
+      <div class="progress-label">
+        <span id="progress-step-label">Step 1 of 11</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════════ -->
+<main class="app-main">
+
+  <!-- ══════════════════════════════════════
+       WIZARD STEPS (left column)
+  ══════════════════════════════════════ -->
+  <div id="wizard">
+
+    <!-- ─────────────────────────────────
+         STEP 0: Welcome
+    ───────────────────────────────── -->
+    <section class="step-panel active" id="step-0" data-step="0">
+      <div class="step-header">
+        <div class="step-number">Getting Started</div>
+        <div class="step-title">Welcome to Your 2025 Tax Wizard</div>
+        <div class="step-subtitle">Federal Form 1040 &amp; Colorado DR 0104 — prepared for your review</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🔒</div>
+          <div class="callout-body">
+            <div class="callout-title">Your privacy is protected</div>
+            Everything you enter stays entirely in your browser. No data is sent to any server, stored in any database, or saved to the cloud. When you close this tab, your data is gone. You can optionally save your progress by copying the export code at the end.
+          </div>
+        </div>
+
+        <div class="callout callout-warn">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-body">
+            <div class="callout-title">This tool provides guidance, not legal advice</div>
+            All calculations follow current IRS and Colorado Department of Revenue rules. However, every tax situation is unique. The summaries this tool produces are designed to help you fill out your own forms accurately — they are not a substitute for professional advice if your situation changes.
+          </div>
+        </div>
+
+        <p class="mb-4">This wizard will walk you through your 2025 tax return step by step, asking you plain-language questions and translating your answers into the exact values you need to enter on each form line.</p>
+
+        <div class="section-label">What you'll need before you start</div>
+        <div class="callout callout-success" style="flex-direction:column; gap:8px;">
+          <div class="callout-body">
+            <ul style="list-style:none; display:flex; flex-direction:column; gap:8px;">
+              <li>📄 <strong>W-2 from Minerva University</strong> — all boxes, especially Box 1, 2, 4, 6, 12, 17</li>
+              <li>📋 <strong>Schedule K-1 (Form 1120-S)</strong> from your S-corporation — Box 1 ordinary income/loss</li>
+              <li>📊 <strong>1099-INT / 1099-DIV / 1099-B</strong> — if you have investment income (interest, dividends, capital gains)</li>
+              <li>🏦 <strong>1098-E</strong> — if you paid student loan interest</li>
+              <li>📝 <strong>Records of IRA contributions</strong> (if any) made for tax year 2025</li>
+              <li>🏡 <strong>Property tax records</strong> — if you pay property taxes directly (not through escrow)</li>
+              <li>💌 <strong>Charitable contribution records</strong> — receipts for any donation ≥ $250</li>
+              <li>🔑 <strong>Prior-year AGI: $192,967</strong> — needed to verify your identity when you e-file. This is pre-loaded.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-warn mt-4">
+          <div class="callout-icon">📌</div>
+          <div class="callout-body">
+            <div class="callout-title">Two important facts about your situation</div>
+            <p><strong>Your alimony is not deductible.</strong> Because your divorce was finalized in January 2025, your agreement falls under post-2018 tax law. Alimony paid under agreements executed after December 31, 2018 is not deductible for the payer and not taxable income for the recipient. Your $7,410 in payments has zero effect on your federal or state taxes.</p>
+            <p style="margin-top:8px;"><strong>Your S-corporation uses Schedule E, not Schedule C.</strong> Schedule C is for sole proprietors only. As an S-corp owner, you report your share of the business income or loss using the K-1 your S-corp provides, which flows to Schedule E Part II. Your phone/internet deductions reduce the S-corp's income before the K-1 is generated.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <div></div>
+        <button class="btn btn-primary" onclick="goToStep(1)">Let's Begin →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 1: Filing Status
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-1" data-step="1">
+      <div class="step-header">
+        <div class="step-number">Step 1 of 11</div>
+        <div class="step-title">Your Filing Status</div>
+        <div class="step-subtitle">This determines your tax bracket, standard deduction, and which form lines to use</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-body">
+            <div class="callout-title">Your divorce was finalized in January 2025</div>
+            Because you were legally divorced before December 31, 2025, you cannot file as Married for tax year 2025. Your choices are <strong>Single</strong> or <strong>Head of Household</strong>.
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Do your children qualify you for Head of Household?</label>
+          <div class="field-hint">Head of Household gives you a larger standard deduction ($23,625 vs. $15,750) and lower tax rates. Answer the questions below to find out if you qualify.</div>
+
+          <div class="callout callout-warn" style="margin-top:12px; margin-bottom:16px;">
+            <div class="callout-icon">📋</div>
+            <div class="callout-body">
+              <div class="callout-title">The IRS three-part test for Head of Household</div>
+              <p>You can file as Head of Household <strong>only if ALL three are true</strong>:</p>
+              <ol style="margin-top:8px; margin-left:18px; display:flex; flex-direction:column; gap:6px;">
+                <li><strong>Unmarried:</strong> You were unmarried (or legally separated) on December 31, 2025. ✅ (Your divorce is final)</li>
+                <li><strong>Paid more than half the cost of your home:</strong> You paid more than 50% of the costs to keep up your main home during 2025 (rent/mortgage, utilities, repairs, property tax, food eaten at home, etc.)</li>
+                <li><strong>Qualifying person lived with you:</strong> A qualifying person (such as your child) lived in your home for MORE than half the year — that means more than 183 nights from January 1 through December 31, 2025.<br><small class="text-muted">Important: this test uses <em>nights in your home</em>, not legal custody. You can qualify for HOH even as the non-custodial parent if your children actually lived with you more than 183 nights.</small></li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Did your child(ren) live in your home for more than 183 nights in 2025?</label>
+            <div class="radio-group">
+              <label class="radio-option" id="opt-nights-yes">
+                <input type="radio" name="nights-test" value="yes" onchange="updateHOHTest()">
+                <div><div class="option-label">Yes — they lived with me more than 183 nights</div></div>
+              </label>
+              <label class="radio-option" id="opt-nights-no">
+                <input type="radio" name="nights-test" value="no" onchange="updateHOHTest()" checked>
+                <div><div class="option-label">No — they lived with me fewer than 183 nights (or I'm not sure)</div></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-group" id="home-cost-group" style="display:none;">
+            <label>Did you pay more than half the cost of keeping up your home in 2025?</label>
+            <div class="radio-group">
+              <label class="radio-option" id="opt-cost-yes">
+                <input type="radio" name="home-cost" value="yes" onchange="updateHOHTest()">
+                <div><div class="option-label">Yes — I paid more than 50% of the household costs</div></div>
+              </label>
+              <label class="radio-option" id="opt-cost-no">
+                <input type="radio" name="home-cost" value="no" onchange="updateHOHTest()">
+                <div><div class="option-label">No — my ex or someone else paid more than half</div></div>
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="filing-status-result"></div>
+
+        <input type="hidden" id="filing-status" value="single">
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(0)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(2)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 2: W-2 from Minerva
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-2" data-step="2">
+      <div class="step-header">
+        <div class="step-number">Step 2 of 11</div>
+        <div class="step-title">W-2: Income from Minerva University</div>
+        <div class="step-subtitle">Enter the values from each box on your W-2. All boxes are labeled on the actual form.</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">📄</div>
+          <div class="callout-body">
+            <div class="callout-title">Your W-2 from Minerva University</div>
+            Your employer should have sent this by January 31, 2026. If you haven't received it, you can request it from HR or check your payroll portal. The key boxes are 1, 2, 4, 6, 12, and 17.
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="w2-box1">Box 1 — Wages, salaries, tips, etc.</label>
+            <div class="field-hint">Your total taxable wages for the year. This goes on Form 1040, Line 1a.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box1" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="w2-box2">Box 2 — Federal income tax withheld</label>
+            <div class="field-hint">How much your employer already sent to the IRS on your behalf. Goes on Form 1040, Line 25a.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box2" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="w2-box4">Box 4 — Social Security tax withheld</label>
+            <div class="field-hint">Should be 6.2% of Box 3 (Social Security wages), maximum $10,918.20. Used to check for overwithholding.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box4" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="w2-box6">Box 6 — Medicare tax withheld</label>
+            <div class="field-hint">Should be 1.45% of Box 5 (Medicare wages). If your W-2 wages exceed $200,000, an extra 0.9% applies.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box6" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Box 12 — Special items (enter 0 if blank)</div>
+        <div class="field-hint mb-4">Box 12 uses codes. The most common ones that affect your taxes are shown below. Leave blank/zero if not on your W-2.</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="w2-box12-W">Box 12, Code W — Employer HSA contributions</label>
+            <div class="field-hint">Health Savings Account contributions your employer made on your behalf. Not taxable but must be reported.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box12-W" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="w2-box12-D">Box 12, Code D — 401(k) contributions</label>
+            <div class="field-hint">Pre-tax 401(k) contributions already excluded from Box 1. Informational only — you do not deduct this separately.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box12-D" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="w2-box12-DD">Box 12, Code DD — Employer health insurance</label>
+            <div class="field-hint">Cost of employer-sponsored health coverage. Informational only — not taxable, not deductible separately.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box12-DD" min="0" step="0.01" placeholder="0.00">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="w2-box12-other-code">Box 12, Other code (if any)</label>
+            <div class="field-hint">Enter the letter code (e.g., "C", "E") and amount if there's a code not listed above. Leave blank if none.</div>
+            <input type="text" id="w2-box12-other-code" placeholder="Code (e.g. C)" style="margin-bottom:6px;">
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box12-other-amount" min="0" step="0.01" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Colorado State Withholding</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="w2-box15">Box 15 — State (confirm Colorado)</label>
+            <div class="field-hint">Should show "CO". If it shows another state, contact your HR department.</div>
+            <input type="text" id="w2-box15" value="CO" placeholder="CO">
+          </div>
+          <div class="field-group">
+            <label for="w2-box17">Box 17 — State income tax withheld</label>
+            <div class="field-hint">Colorado income tax your employer withheld. Goes on Colorado Form DR 0104, Line 36.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="w2-box17" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div id="w2-validation-msg"></div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="validateAndGo(3)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 3: S-Corp K-1
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-3" data-step="3">
+      <div class="step-header">
+        <div class="step-number">Step 3 of 11</div>
+        <div class="step-title">S-Corporation Business Income (Schedule K-1)</div>
+        <div class="step-subtitle">Your S-corp income or loss from your Schedule K-1 (Form 1120-S) → reports on Schedule E Part II</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🏢</div>
+          <div class="callout-body">
+            <div class="callout-title">How S-corp income works on your taxes</div>
+            <p>Your S-corporation filed its own tax return (Form 1120-S) and issued you a Schedule K-1 showing your share of the business results. You report that K-1 information on <strong>Schedule E Part II</strong> of your Form 1040 — this is different from Schedule C (which is for sole proprietors only).</p>
+            <p style="margin-top:8px;">Your phone and internet expenses are deducted <em>inside the S-corp's return</em> before the K-1 is generated, so those write-offs are already built into the K-1 number. You do not deduct them separately on your personal return.</p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="scorp-name">S-Corp business name</label>
+            <div class="field-hint">As it appears on your K-1 header. Used on Schedule E.</div>
+            <input type="text" id="scorp-name" placeholder="e.g., Your Business Name, Inc.">
+          </div>
+          <div class="field-group">
+            <label for="scorp-ein">S-Corp EIN (Employer Identification Number)</label>
+            <div class="field-hint">9-digit number on your K-1, formatted XX-XXXXXXX. Required on Schedule E.</div>
+            <input type="text" id="scorp-ein" placeholder="XX-XXXXXXX" maxlength="10">
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">From your Schedule K-1 (Form 1120-S)</div>
+
+        <div class="field-group">
+          <label for="k1-box1">Box 1 — Ordinary business income (loss)</label>
+          <div class="field-hint">This is your share of the S-corp's net income or loss from normal business operations. If it's a loss (more expenses than income), enter it as a negative number (e.g., -500). This is the most important K-1 line for most small S-corps.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="k1-box1" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="k1-box2">Box 2 — Net rental real estate income (loss)</label>
+            <div class="field-hint">Usually 0 for a service/consulting S-corp. Enter 0 if blank.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="k1-box2" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="k1-box16d">Box 16, Code D — Distributions</label>
+            <div class="field-hint">Cash or property distributions paid to you by the S-corp. These are generally <em>not</em> taxable income if you have sufficient basis. Enter 0 if none.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="k1-box16d" min="0" step="0.01" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Did you materially participate in the S-corporation in 2025?</label>
+          <div class="field-hint">Material participation means you were involved in the business on a regular, continuous, and substantial basis — e.g., you actively managed it, used it for your phone/internet work, spent more than 100 hours on it during the year, etc. Most S-corp owners who run their own business qualify.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="material-participation" value="yes" checked onchange="recalculate()">
+              <div>
+                <div class="option-label">Yes — I was actively involved in running the business</div>
+                <div class="option-desc">Any loss from Box 1 will directly reduce your taxable income (subject to your basis in the S-corp).</div>
+              </div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="material-participation" value="no" onchange="recalculate()">
+              <div>
+                <div class="option-label">No — I was a passive investor only</div>
+                <div class="option-desc">Any loss would be a "passive activity loss" and can only offset passive activity income — it cannot reduce your W-2 wages. This would require Form 8582.</div>
+              </div>
+            </label>
+          </div>
+          <div class="callout callout-warn" style="margin-top:10px;">
+            <div class="callout-icon">⚠️</div>
+            <div class="callout-body" style="font-size:0.85rem;">
+              <strong>Basis limitation:</strong> S-corp losses can only be deducted up to your <em>basis</em> in the corporation (your initial investment plus any loans you've personally made to the S-corp, adjusted for prior years' income and losses). If your cumulative losses have exceeded your investment, some of the loss may be suspended. If you've had prior year K-1 losses that exceeded your contributions, consult the IRS guidance on S-corp basis before filing.
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(4)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 4: Other Income
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-4" data-step="4">
+      <div class="step-header">
+        <div class="step-number">Step 4 of 11</div>
+        <div class="step-title">Other Income</div>
+        <div class="step-subtitle">Interest, dividends, capital gains, and anything else not from your W-2 or K-1</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-body">
+            Enter 0 for any item that doesn't apply to you. You'll find most of these amounts on year-end statements from your bank or brokerage.
+          </div>
+        </div>
+
+        <div class="section-label">Interest Income (Form 1099-INT)</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="interest-taxable">Box 1 — Taxable interest</label>
+            <div class="field-hint">Interest from bank accounts, CDs, money market accounts, corporate bonds. Goes on Form 1040, Line 2b.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="interest-taxable" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="interest-us-govt">Box 3 — U.S. savings bond / Treasury interest</label>
+            <div class="field-hint">Interest from U.S. government obligations. Taxable federally but <strong>exempt from Colorado income tax</strong> — this will reduce your Colorado taxable income.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="interest-us-govt" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Dividend Income (Form 1099-DIV)</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="div-ordinary">Box 1a — Total ordinary dividends</label>
+            <div class="field-hint">All dividends paid to you. Goes on Form 1040, Line 3b.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="div-ordinary" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="div-qualified">Box 1b — Qualified dividends (subset of Box 1a)</label>
+            <div class="field-hint">Dividends that qualify for lower capital gains tax rates. Must be ≤ Box 1a. Goes on Form 1040, Line 3a.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="div-qualified" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Capital Gains &amp; Losses (Schedule D / Form 1099-B)</div>
+
+        <div class="callout callout-warn">
+          <div class="callout-icon">📊</div>
+          <div class="callout-body">
+            <div class="callout-title">Did you sell any stocks, funds, or other investments in 2025?</div>
+            If yes, you'll need to complete a full Schedule D based on your 1099-B from your brokerage. Enter your <strong>net</strong> capital gain or loss here (total proceeds minus total cost basis). <strong>Long-term gains (assets held &gt;1 year) are taxed at preferential rates (0%, 15%, or 20%).</strong> Short-term gains are taxed as ordinary income.
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Did you sell any stocks, bonds, mutual funds, or other investments in 2025?</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-capital-gains" value="no" checked onchange="toggleCapGains()">
+              <div><div class="option-label">No — I didn't sell any investments</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-capital-gains" value="yes" onchange="toggleCapGains()">
+              <div><div class="option-label">Yes — I have capital gains or losses to report</div></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="conditional-section" id="capital-gains-section">
+          <div class="field-row">
+            <div class="field-group">
+              <label for="cap-gain-lt">Net long-term capital gain (loss)</label>
+              <div class="field-hint">Assets held more than 1 year. Use a negative number for a net loss.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="cap-gain-lt" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="cap-gain-st">Net short-term capital gain (loss)</label>
+              <div class="field-hint">Assets held 1 year or less. Taxed as ordinary income. Use a negative number for a net loss.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="cap-gain-st" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+          <div class="callout callout-info" style="margin-top:8px;">
+            <div class="callout-body" style="font-size:0.83rem;">
+              Capital losses are limited to $3,000 per year against ordinary income. Any excess carries forward to future years. If your net capital loss exceeds $3,000, you'll report ($3,000) on your Form 1040 Line 7 and carry the remainder forward.
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Other Income</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="unemployment">Unemployment compensation (1099-G)</label>
+            <div class="field-hint">Unemployment benefits are fully taxable at the federal level. Goes on Schedule 1, Line 7.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="unemployment" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="other-income">Any other taxable income not listed above</label>
+            <div class="field-hint">Prizes, awards, jury duty pay, gambling winnings, 1099-NEC income, etc.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="other-income" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="state-tax-refund">State tax refund received in 2025 (from 2024 Colorado return)</label>
+          <div class="field-hint">If you received a Colorado state tax refund in 2025 AND you itemized deductions on your 2024 federal return, that refund may be taxable as "recovery of a prior deduction." If you took the standard deduction in 2024 (as most people do), this is <strong>not</strong> taxable — enter 0.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="state-tax-refund" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(3)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(5)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 5: Schedule 1-A (New 2025 Deductions)
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-5" data-step="5">
+      <div class="step-header">
+        <div class="step-number">Step 5 of 11</div>
+        <div class="step-title">New 2025 Deductions — Schedule 1-A</div>
+        <div class="step-subtitle">Four brand-new deductions created by the One Big Beautiful Bill Act, effective for tax year 2025 only</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-success">
+          <div class="callout-icon">🆕</div>
+          <div class="callout-body">
+            <div class="callout-title">Schedule 1-A is new for 2025</div>
+            This is a brand-new form. These deductions are "above the line" — meaning you get them whether you itemize or take the standard deduction. Answer each question to see if any apply to you.
+          </div>
+        </div>
+
+        <!-- No Tax on Tips -->
+        <div class="field-group">
+          <label>1. Did you receive cash tips in your job in 2025?</label>
+          <div class="field-hint">This applies to workers in industries where tipping is customary — restaurants, hospitality, hair salons, etc. It likely does <strong>not</strong> apply to a university employee unless you received tips in a separate tipped job.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-tips" value="no" checked onchange="toggleTips()">
+              <div><div class="option-label">No — I didn't receive tips in a tipped occupation</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-tips" value="yes" onchange="toggleTips()">
+              <div><div class="option-label">Yes — I received tips in a qualifying tipped occupation</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="tips-section">
+            <div class="field-group">
+              <label for="qualified-tips">Total qualified tips received in 2025</label>
+              <div class="field-hint">Maximum deduction is $25,000. Phases out if your modified AGI exceeds $150,000.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="qualified-tips" min="0" max="25000" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- No Tax on Overtime -->
+        <div class="field-group">
+          <label>2. Did you earn overtime pay in 2025?</label>
+          <div class="field-hint">Overtime pay under the Fair Labor Standards Act (FLSA) — hours worked beyond 40 hours per week paid at 1.5x or more. Must be shown separately on your W-2 or pay stubs. This applies to non-exempt employees only.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-overtime" value="no" checked onchange="toggleOvertime()">
+              <div><div class="option-label">No — I didn't earn overtime pay</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-overtime" value="yes" onchange="toggleOvertime()">
+              <div><div class="option-label">Yes — I earned qualifying overtime pay</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="overtime-section">
+            <div class="field-group">
+              <label for="qualified-overtime">Total qualified overtime pay received in 2025</label>
+              <div class="field-hint">Maximum deduction is $12,500 for Single filers. Phases out if your modified AGI exceeds $150,000.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="qualified-overtime" min="0" max="12500" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Car Loan Interest -->
+        <div class="field-group">
+          <label>3. Did you buy a personal-use vehicle in 2025 using a loan?</label>
+          <div class="field-hint">You can deduct up to $10,000 in interest paid on a loan for a passenger vehicle purchased <strong>in 2025</strong> for personal (non-business) use. The vehicle must be new (model year 2025 or newer). Phases out if your modified AGI exceeds $100,000.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-car-loan" value="no" checked onchange="toggleCarLoan()">
+              <div><div class="option-label">No — I didn't buy a vehicle in 2025 with a loan</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-car-loan" value="yes" onchange="toggleCarLoan()">
+              <div><div class="option-label">Yes — I bought a personal vehicle in 2025 using a loan</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="car-loan-section">
+            <div class="field-group">
+              <label for="car-loan-interest">Total interest paid on that vehicle loan in 2025</label>
+              <div class="field-hint">Maximum deduction is $10,000. Look at your loan statements or Form 1098-C from the lender.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="car-loan-interest" min="0" max="10000" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Senior Deduction -->
+        <div class="field-group">
+          <label>4. Were you born before January 2, 1961? (Age 65 or older)</label>
+          <div class="field-hint">If so, you may qualify for a new enhanced senior deduction of up to $6,000. Phases out if your modified AGI exceeds $75,000.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="is-senior" value="no" checked onchange="recalculate()">
+              <div><div class="option-label">No — I was born on or after January 2, 1961</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="is-senior" value="yes" onchange="recalculate()">
+              <div><div class="option-label">Yes — I was born before January 2, 1961</div></div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(4)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(6)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 6: Other Adjustments (Schedule 1 Part II)
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-6" data-step="6">
+      <div class="step-header">
+        <div class="step-number">Step 6 of 11</div>
+        <div class="step-title">Adjustments to Income</div>
+        <div class="step-subtitle">These "above the line" deductions reduce your AGI even if you take the standard deduction</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-body">
+            <div class="callout-title">These deductions are on Schedule 1, Part II</div>
+            Unlike itemized deductions (Schedule A), these reduce your Adjusted Gross Income (AGI) directly, which also reduces the floor for medical deductions and helps with income-based phase-outs. You get these regardless of whether you itemize.
+          </div>
+        </div>
+
+        <!-- IRA -->
+        <div class="field-group">
+          <label>Did you contribute to a Traditional IRA for 2025?</label>
+          <div class="field-hint">You can contribute up to $7,000 ($8,000 if you're 50 or older by year-end) to a Traditional IRA. The contribution may be <strong>deductible</strong> depending on your income and whether you're covered by a workplace retirement plan. Because you have a W-2, you're likely covered by a workplace plan.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-ira" value="no" checked onchange="toggleIRA()">
+              <div><div class="option-label">No — I didn't contribute to a Traditional IRA</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-ira" value="yes" onchange="toggleIRA()">
+              <div><div class="option-label">Yes — I contributed to a Traditional IRA for 2025</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="ira-section">
+            <div class="field-group">
+              <label for="ira-contribution">Total Traditional IRA contribution for 2025</label>
+              <div class="field-hint">You have until April 15, 2026 to make a 2025 IRA contribution. Max: $7,000 (or $8,000 if 50+). Deductibility is determined automatically below based on your income.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="ira-contribution" min="0" max="8000" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+            <div id="ira-deductibility-msg"></div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Student Loan Interest -->
+        <div class="field-group">
+          <label>Did you pay student loan interest in 2025?</label>
+          <div class="field-hint">Interest on qualified student loans is deductible up to $2,500. This phases out between $85,000–$100,000 of modified AGI for Single filers. Look for Form 1098-E from your loan servicer.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-student-loan" value="no" checked onchange="toggleStudentLoan()">
+              <div><div class="option-label">No — I didn't pay student loan interest</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-student-loan" value="yes" onchange="toggleStudentLoan()">
+              <div><div class="option-label">Yes — I paid student loan interest (Form 1098-E)</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="student-loan-section">
+            <div class="field-group">
+              <label for="student-loan-interest">Total student loan interest paid in 2025 (Box 1 of Form 1098-E)</label>
+              <div class="field-hint">Maximum deduction is $2,500. The actual deduction may be less if your income is in the phase-out range.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="student-loan-interest" min="0" max="2500" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- HSA Deduction -->
+        <div class="field-group">
+          <label>Did you contribute to a Health Savings Account (HSA) yourself in 2025?</label>
+          <div class="field-hint">If you have a High-Deductible Health Plan (HDHP), you can contribute to an HSA. Your employer's contributions (Box 12, Code W on your W-2) are already excluded from income. Only <em>your own personal contributions</em> are deductible here. The 2025 limit is $4,300 for self-only HDHP coverage.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-hsa" value="no" checked onchange="toggleHSA()">
+              <div><div class="option-label">No — I didn't make my own HSA contributions</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-hsa" value="yes" onchange="toggleHSA()">
+              <div><div class="option-label">Yes — I contributed to my own HSA (not through payroll)</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="hsa-section">
+            <div class="field-group">
+              <label for="hsa-contribution">Your HSA contributions in 2025 (not employer's — just yours)</label>
+              <div class="field-hint">This goes on Form 8889 (HSA deduction), then carries to Schedule 1 Line 13. Max $4,300 (self-only) or $8,550 (family coverage).</div>
+              <div class="money-input-wrap">
+                <input type="number" id="hsa-contribution" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Alimony Note -->
+        <div class="callout callout-warn">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-body">
+            <div class="callout-title">Your alimony payments are not deductible</div>
+            As noted at the start: your divorce agreement was executed in January 2025, which makes it a post-2018 agreement. Under the Tax Cuts and Jobs Act, alimony paid under post-2018 agreements is <strong>not deductible</strong> by the payer. Your $7,410 in annual alimony payments ($538 × 3 months + $644 × 9 months) has no effect on your federal or Colorado taxes. <a href="https://www.irs.gov/taxtopics/tc452" target="_blank" rel="noopener" style="color:#92400e;">IRS Topic 452 — Alimony</a>
+          </div>
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(5)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(7)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 7: Deductions (Standard vs Itemized)
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-7" data-step="7">
+      <div class="step-header">
+        <div class="step-number">Step 7 of 11</div>
+        <div class="step-title">Standard vs. Itemized Deductions</div>
+        <div class="step-subtitle">You'll take whichever is larger. Let's check whether itemizing beats the standard deduction.</div>
+      </div>
+      <div class="step-body">
+
+        <div id="standard-deduction-display" class="callout callout-info">
+          <div class="callout-icon">📏</div>
+          <div class="callout-body">
+            <div class="callout-title">Your standard deduction</div>
+            <span id="standard-deduction-amount">Calculating…</span>
+          </div>
+        </div>
+
+        <div class="callout callout-warn">
+          <div class="callout-icon">🏠</div>
+          <div class="callout-body">
+            <div class="callout-title">Mortgage interest: not applicable for you</div>
+            Even though you co-own the home with your ex-spouse, she is making the mortgage payments. Because you are not the one making the payments, you cannot deduct the interest — only the person who actually paid the interest can claim it. This removes the biggest potential itemized deduction for most homeowners.
+          </div>
+        </div>
+
+        <div class="section-label">Enter your potential itemized deductions below</div>
+        <p class="text-sm text-muted mb-4">We'll calculate your total and compare it to the standard deduction automatically.</p>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="item-property-tax">Property taxes you paid directly in 2025</label>
+            <div class="field-hint">Real estate taxes on property you own that you paid yourself (not through an escrow/mortgage payment). The SALT deduction cap is $40,000 for 2025 (combined with state income taxes). Since your ex pays the mortgage on the shared home, only property taxes you pay separately count here.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="item-property-tax" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="item-charity-cash">Cash charitable contributions</label>
+            <div class="field-hint">Donations by check, cash, or credit card to qualifying non-profits. You need a receipt or bank record for any donation. Written acknowledgment required for $250+. Deductible up to 60% of AGI.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="item-charity-cash" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="item-charity-noncash">Non-cash charitable contributions</label>
+            <div class="field-hint">Fair market value of donated clothing, household goods, vehicles, etc. to qualifying charities. Form 8283 required if total exceeds $500. FMV must be documented.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="item-charity-noncash" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="item-medical">Total unreimbursed medical &amp; dental expenses</label>
+            <div class="field-hint">Only the amount exceeding 7.5% of your AGI is deductible. Enter your total and the tool will calculate the deductible portion. Includes premiums you paid out-of-pocket, prescriptions, doctor visits, dental, vision.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="item-medical" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div id="deduction-comparison" class="mt-4"></div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(6)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(8)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 8: Tax Credits
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-8" data-step="8">
+      <div class="step-header">
+        <div class="step-number">Step 8 of 11</div>
+        <div class="step-title">Tax Credits</div>
+        <div class="step-subtitle">Credits directly reduce your tax bill dollar-for-dollar — more powerful than deductions</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">
+            <div class="callout-title">Credits vs. deductions</div>
+            A deduction reduces your <em>taxable income</em>, so its value depends on your tax rate. A credit reduces your <em>tax bill directly</em>. A $1,000 credit saves you $1,000 in taxes; a $1,000 deduction saves you $220 if you're in the 22% bracket.
+          </div>
+        </div>
+
+        <!-- Child Care -->
+        <div class="field-group">
+          <label>Did you pay someone to care for a child under 13 (or a disabled dependent) so you could work?</label>
+          <div class="field-hint">The Child and Dependent Care Credit (Form 2441) applies if you paid a daycare, babysitter, after-school program, or summer day camp. The child must be a qualifying dependent on your return. Since you're not claiming your children as dependents, this credit only applies if you have other qualifying dependents.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-childcare" value="no" checked onchange="toggleChildCare()">
+              <div><div class="option-label">No</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-childcare" value="yes" onchange="toggleChildCare()">
+              <div><div class="option-label">Yes — I paid for qualifying care</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="childcare-section">
+            <div class="field-group">
+              <label for="childcare-expenses">Total qualifying childcare expenses paid in 2025</label>
+              <div class="field-hint">Deductible care expenses max out at $3,000 for one qualifying person or $6,000 for two or more. The credit percentage ranges from 20%–35% depending on your income.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="childcare-expenses" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Education Credit -->
+        <div class="field-group">
+          <label>Did you pay tuition or fees for yourself at a college or university in 2025?</label>
+          <div class="field-hint">The American Opportunity Tax Credit (AOTC) is worth up to $2,500 per student for the first four years of higher education. The Lifetime Learning Credit is worth up to $2,000. Both phase out at higher incomes.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-education" value="no" checked onchange="toggleEducation()">
+              <div><div class="option-label">No</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-education" value="yes" onchange="toggleEducation()">
+              <div><div class="option-label">Yes — I paid qualified education expenses</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="education-section">
+            <div class="field-group">
+              <label for="education-expenses">Qualified tuition and fees paid in 2025 (from Form 1098-T)</label>
+              <div class="field-hint">Box 1 of Form 1098-T shows amounts billed; scholarships/grants are in Box 5. Net qualifying expenses = Box 1 minus Box 5 (approximately). Do not include room and board.</div>
+              <div class="money-input-wrap">
+                <input type="number" id="education-expenses" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Retirement Savings Credit -->
+        <div class="field-group">
+          <label>Did you contribute to a retirement account in 2025? (Saver's Credit)</label>
+          <div class="field-hint">The Retirement Savings Contributions Credit (Form 8880) — also called the "Saver's Credit" — is worth up to $1,000 (50% of up to $2,000 contributed). Only available if your AGI is below approximately $39,500 (Single, 2025). If you contributed to a 401(k) (already excluded from Box 1 of your W-2), HSA, or IRA, you may qualify.</div>
+          <div id="savers-credit-msg"></div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-savers" value="no" checked onchange="recalculate()">
+              <div><div class="option-label">No</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-savers" value="yes" onchange="recalculate()">
+              <div>
+                <div class="option-label">Yes — I contributed to a 401(k), IRA, or similar plan</div>
+                <div class="option-desc">This credit is automatically calculated based on your W-2 Box 12 Code D and any IRA contribution you entered.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Premium Tax Credit -->
+        <div class="field-group">
+          <label>Did you buy health insurance through the Healthcare.gov Marketplace in 2025?</label>
+          <div class="field-hint">If yes, you should have received Form 1095-A. You need to reconcile any advance payments with the actual Premium Tax Credit using Form 8962.</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="has-marketplace" value="no" checked onchange="toggleMarketplace()">
+              <div><div class="option-label">No — I have employer coverage or another non-Marketplace plan</div></div>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="has-marketplace" value="yes" onchange="toggleMarketplace()">
+              <div><div class="option-label">Yes — I had Marketplace health insurance and received Form 1095-A</div></div>
+            </label>
+          </div>
+          <div class="conditional-section" id="marketplace-section">
+            <div class="callout callout-warn">
+              <div class="callout-body" style="font-size:0.85rem;">
+                Marketplace coverage requires completing Form 8962. The net Premium Tax Credit (or repayment) will be entered on Schedule 3, Line 9 or Schedule 2, Line 2. Please complete Form 8962 separately using your Form 1095-A, then enter the result below.
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field-group">
+                <label for="ptc-net">Net Premium Tax Credit from Form 8962, Line 26</label>
+                <div class="field-hint">Positive = credit (refund); negative = repayment (you owe more).</div>
+                <div class="money-input-wrap">
+                  <input type="number" id="ptc-net" step="0.01" placeholder="0.00" oninput="recalculate()">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Federal Estimated Payments -->
+        <div class="section-label">Federal Estimated Tax Payments</div>
+
+        <div class="field-group">
+          <label for="fed-estimated-payments">Total federal estimated tax payments made for 2025</label>
+          <div class="field-hint">If you sent quarterly payments to the IRS (using Form 1040-ES) during 2025, enter the total here. If you didn't make any quarterly payments, enter 0. Check your bank records or IRS.gov account to confirm amounts.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="fed-estimated-payments" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(7)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(9)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 9: Colorado State Taxes
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-9" data-step="9">
+      <div class="step-header">
+        <div class="step-number">Step 9 of 11</div>
+        <div class="step-title">Colorado State Income Tax — DR 0104</div>
+        <div class="step-subtitle">Colorado has a flat 4.4% income tax rate for 2025, starting from federal taxable income</div>
+      </div>
+      <div class="step-body">
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🏔️</div>
+          <div class="callout-body">
+            <div class="callout-title">How Colorado taxes work</div>
+            Colorado starts from your <strong>federal taxable income</strong> (Form 1040, Line 15), then applies Colorado-specific additions and subtractions to arrive at your Colorado taxable income. That amount is multiplied by <strong>4.4%</strong> to get your Colorado tax. Colorado withholding from your W-2 (Box 17) is then credited against that amount.
+          </div>
+        </div>
+
+        <div class="section-label">Colorado Subtractions (things that reduce your Colorado tax)</div>
+
+        <div class="field-group">
+          <label for="co-us-interest">U.S. government bond / Treasury interest income</label>
+          <div class="field-hint">Interest from U.S. savings bonds, Treasury bills, notes, and bonds is <strong>exempt from Colorado income tax</strong>. If you entered an amount in the "Box 3 — U.S. savings bond interest" field earlier, the same amount goes here. This is a subtraction on Colorado Form DR 0104AD, Line 5.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="co-us-interest" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="co-pension">Pension/retirement income subtraction (if applicable)</label>
+          <div class="field-hint">Colorado allows a subtraction for qualifying pension and annuity income. If you received PERA distributions, Social Security, military retirement, or other pension income in 2025, some or all may be subtractable. For individuals under 65, the limit is generally tied to the source of the income. Leave at 0 if not applicable.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="co-pension" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="co-other-subtractions">Other Colorado subtractions</label>
+          <div class="field-hint">Colorado has several other specific subtractions (wildfire mitigation expenses, capital gain subtraction for Colorado-source gains held 5+ years, Native American income, etc.). Leave at 0 if none apply.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="co-other-subtractions" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Colorado Additions (things that increase your Colorado tax)</div>
+
+        <div class="field-group">
+          <label for="co-additions">Colorado additions to income</label>
+          <div class="field-hint">Most Colorado filers have no additions. This would include things like interest/dividends from non-Colorado state or local bonds, or Colorado-specific income adjustments. Leave at 0 if none apply.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="co-additions" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-label">Colorado Credits</div>
+
+        <div class="field-group">
+          <label for="co-estimated-payments">Colorado estimated tax payments made for 2025</label>
+          <div class="field-hint">If you made quarterly estimated tax payments to the Colorado Department of Revenue, enter the total here. Enter 0 if you only had withholding from your W-2.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="co-estimated-payments" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="co-other-credits">Other Colorado credits (from DR 0104CR, if any)</label>
+          <div class="field-hint">Colorado offers various credits including the Child Care Contribution Credit, Earned Income Tax Credit (25% of federal EITC), Property Tax/Rent/Heat Credit, and others. Leave at 0 if none apply, and note that the EITC typically only applies at lower income levels.</div>
+          <div class="money-input-wrap">
+            <input type="number" id="co-other-credits" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+          </div>
+        </div>
+
+        <div id="co-calc-preview" class="mt-4"></div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(8)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(10)">Next →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 10: Review & Verify
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-10" data-step="10">
+      <div class="step-header">
+        <div class="step-number">Step 10 of 11</div>
+        <div class="step-title">Review Your Information</div>
+        <div class="step-subtitle">Before generating your final summary, confirm everything looks right</div>
+      </div>
+      <div class="step-body">
+
+        <div id="review-content"></div>
+
+        <div class="callout callout-warn mt-4">
+          <div class="callout-icon">📋</div>
+          <div class="callout-body">
+            <div class="callout-title">Before you proceed</div>
+            <ul style="margin-left:18px; margin-top:6px; display:flex; flex-direction:column; gap:4px; font-size:0.9rem;">
+              <li>Double-check all dollar amounts against your actual documents</li>
+              <li>Make sure your K-1 from the S-corp has been issued for 2025 before using those numbers</li>
+              <li>Your prior-year AGI for e-file identity verification is <strong>$192,967</strong></li>
+              <li>Free File Fillable Forms are available at <strong>IRS.gov/FreeFile</strong> starting January 26, 2026</li>
+              <li>Colorado can be e-filed at <strong>Revenue.Colorado.gov</strong> or through the federal e-file (MeF) system</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(9)">← Back</button>
+        <button class="btn btn-success" onclick="generateAndShowSummary()">Generate Final Summary →</button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────
+         STEP 11: Final Summary
+    ───────────────────────────────── -->
+    <section class="step-panel" id="step-summary" data-step="11">
+      <div class="step-header">
+        <div class="step-number">Step 11 of 11</div>
+        <div class="step-title">Your Complete Tax Summary</div>
+        <div class="step-subtitle">Form-by-form line instructions for Free File Fillable Forms — Tax Year 2025</div>
+      </div>
+      <div class="step-body">
+
+        <div id="summary-content"></div>
+
+        <div class="important-note">
+          <strong>⚠️ Disclaimer:</strong> This summary is based on the information you entered and reflects current IRS and Colorado Department of Revenue rules for tax year 2025. All calculations follow IRS Publication 505, the Form 1040 instructions, and Colorado DR 0104 instructions. This tool provides guidance to help you fill out your own forms — it does not constitute professional tax advice. If any part of your situation is more complex than what was covered (e.g., large capital losses, S-corp basis limitations, alternative minimum tax), you may wish to consult a CPA before filing. The IRS helpline is <strong>800-829-1040</strong>.
+        </div>
+
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(10)">← Back</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨 Print Summary</button>
+      </div>
+    </section>
+
+  </div><!-- end #wizard -->
+
+  <!-- ══════════════════════════════════════
+       SIDEBAR (right column)
+  ══════════════════════════════════════ -->
+  <aside class="sidebar">
+
+    <!-- Step Navigator -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">Steps</div>
+      <div class="steps-nav" id="step-navigator">
+        <div class="step-nav-item active" data-nav="0"><div class="step-nav-dot">✦</div>Welcome</div>
+        <div class="step-nav-item" data-nav="1"><div class="step-nav-dot">1</div>Filing Status</div>
+        <div class="step-nav-item" data-nav="2"><div class="step-nav-dot">2</div>W-2 Income</div>
+        <div class="step-nav-item" data-nav="3"><div class="step-nav-dot">3</div>S-Corp K-1</div>
+        <div class="step-nav-item" data-nav="4"><div class="step-nav-dot">4</div>Other Income</div>
+        <div class="step-nav-item" data-nav="5"><div class="step-nav-dot">5</div>New 2025 Deductions</div>
+        <div class="step-nav-item" data-nav="6"><div class="step-nav-dot">6</div>Adjustments</div>
+        <div class="step-nav-item" data-nav="7"><div class="step-nav-dot">7</div>Deductions</div>
+        <div class="step-nav-item" data-nav="8"><div class="step-nav-dot">8</div>Credits</div>
+        <div class="step-nav-item" data-nav="9"><div class="step-nav-dot">9</div>Colorado</div>
+        <div class="step-nav-item" data-nav="10"><div class="step-nav-dot">10</div>Review</div>
+        <div class="step-nav-item" data-nav="11"><div class="step-nav-dot">✓</div>Summary</div>
+      </div>
+    </div>
+
+    <!-- Running Federal Calculation -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">Federal — Running Estimate</div>
+      <div class="sidebar-card-body" id="fed-running-calc">
+        <div class="calc-row"><span class="calc-label">W-2 wages</span><span class="calc-value" id="rc-wages">—</span></div>
+        <div class="calc-row"><span class="calc-label">S-Corp K-1 income</span><span class="calc-value" id="rc-scorp">—</span></div>
+        <div class="calc-row"><span class="calc-label">Other income</span><span class="calc-value" id="rc-other">—</span></div>
+        <div class="calc-row total"><span class="calc-label">Total income</span><span class="calc-value" id="rc-total-income">—</span></div>
+        <div class="calc-row"><span class="calc-label">Adjustments (Sch 1)</span><span class="calc-value neg" id="rc-adj">—</span></div>
+        <div class="calc-row total"><span class="calc-label">AGI (Line 11)</span><span class="calc-value" id="rc-agi">—</span></div>
+        <div class="calc-row"><span class="calc-label">Deduction</span><span class="calc-value neg" id="rc-deduction">—</span></div>
+        <div class="calc-row total"><span class="calc-label">Taxable income</span><span class="calc-value" id="rc-taxable">—</span></div>
+        <div class="calc-row"><span class="calc-label">Tax (from table)</span><span class="calc-value" id="rc-tax">—</span></div>
+        <div class="calc-row"><span class="calc-label">Credits</span><span class="calc-value neg" id="rc-credits">—</span></div>
+        <div class="calc-row"><span class="calc-label">Withholding</span><span class="calc-value neg" id="rc-withholding">—</span></div>
+        <div class="calc-row total" id="rc-result-row">
+          <span class="calc-label" id="rc-result-label">Estimated refund</span>
+          <span class="calc-value" id="rc-result">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Running Colorado Calculation -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">Colorado — Running Estimate</div>
+      <div class="sidebar-card-body">
+        <div class="calc-row"><span class="calc-label">CO taxable income</span><span class="calc-value" id="rc-co-taxable">—</span></div>
+        <div class="calc-row"><span class="calc-label">CO tax @ 4.4%</span><span class="calc-value" id="rc-co-tax">—</span></div>
+        <div class="calc-row"><span class="calc-label">CO withholding</span><span class="calc-value neg" id="rc-co-withholding">—</span></div>
+        <div class="calc-row total" id="rc-co-result-row">
+          <span class="calc-label" id="rc-co-result-label">CO est. refund</span>
+          <span class="calc-value" id="rc-co-result">—</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>
