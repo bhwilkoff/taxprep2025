@@ -542,8 +542,54 @@ function recalculate() {
     updateCOPreview(t);
     updateF1120SDisplay(t);
     updateForm8962Display(t);
+
+    // Persist form data between sessions
+    saveFormData();
   } catch(e) {
     console.error('Calculation error:', e);
+  }
+}
+
+// ============================================================
+//  LOCAL STORAGE PERSISTENCE
+// ============================================================
+const STORAGE_KEY = 'taxprep2025_v1';
+
+function saveFormData() {
+  try {
+    const data = {};
+    document.querySelectorAll('input:not([type="button"]):not([type="submit"]):not([type="reset"]), select, textarea').forEach(el => {
+      if (!el.id) return;
+      if (el.type === 'radio' || el.type === 'checkbox') {
+        data[el.id] = el.checked;
+      } else {
+        data[el.id] = el.value;
+      }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {
+    // localStorage may be unavailable (private browsing, quota exceeded, etc.)
+  }
+}
+
+function restoreFormData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.entries(data).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === 'radio' || el.type === 'checkbox') {
+        el.checked = value;
+        if (el.checked) el.dispatchEvent(new Event('change', { bubbles: true }));
+      } else {
+        el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+  } catch(e) {
+    // Ignore restore errors — start fresh
   }
 }
 
@@ -1467,6 +1513,7 @@ function generateAndShowSummary() {
 //  INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  restoreFormData();
   goToStep(0);
   recalculate();
 
