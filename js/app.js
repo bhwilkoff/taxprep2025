@@ -174,6 +174,50 @@ function calcLTCGTax(ltcgAmount, ordinaryTaxableIncome, brackets) {
 }
 
 // ============================================================
+//  FORM 8962 — PREMIUM TAX CREDIT CALCULATION
+// ============================================================
+// 2025 HHS Federal Poverty Guidelines (48 contiguous states + DC)
+const FPL_2025 = [0, 15650, 21150, 26650, 32150, 37650, 43150, 48650, 54150];
+const FPL_2025_EXTRA = 5500; // per additional person beyond 8
+
+// IRS Table 2 applicable contribution percentage ranges (2025)
+// Each entry: [lowerFPLpct, upperFPLpct, initialContribPct, finalContribPct]
+const PTC_TABLE2 = [
+  [100, 133, 0.0206, 0.0206],
+  [133, 150, 0.0309, 0.0406],
+  [150, 200, 0.0406, 0.0648],
+  [200, 250, 0.0648, 0.0810],
+  [250, 300, 0.0810, 0.0978],
+  [300, Infinity, 0.0978, 0.0978],  // 2025: IRA extension keeps cap at 9.78% for 400%+
+];
+
+function calcForm8962(magi, familySize, enrollPrem, slcspPrem, aptcPaid) {
+  const size  = Math.max(1, Math.round(familySize || 1));
+  const fpl   = size <= 8 ? FPL_2025[size] : FPL_2025[8] + (size - 8) * FPL_2025_EXTRA;
+  const fplPct = fpl > 0 ? (magi / fpl) * 100 : 0;  // Line 5
+
+  // Look up applicable figure (Line 7) via Table 2 linear interpolation
+  let applicablePct = 0;
+  if (fplPct >= 100) {
+    for (const [lo, hi, init, final] of PTC_TABLE2) {
+      if (fplPct >= lo && fplPct < hi) {
+        const range = hi === Infinity ? 1 : hi - lo;
+        applicablePct = init + ((fplPct - lo) / range) * (final - init);
+        break;
+      }
+    }
+    if (fplPct >= 400) applicablePct = 0.0978; // IRA extension — no cliff above 400%
+  }
+
+  const annualContrib = magi * applicablePct;              // Line 8a
+  const maxPTC        = Math.max(0, slcspPrem - annualContrib); // Line 11d
+  const annualPTC     = Math.min(enrollPrem, maxPTC);      // Line 11e = Line 24
+  const netPTC        = annualPTC - aptcPaid;              // Line 26
+
+  return { fpl, fplPct, applicablePct, annualContrib, enrollPrem, slcspPrem, maxPTC, annualPTC, aptcPaid, netPTC };
+}
+
+// ============================================================
 //  MASTER CALCULATION  — returns a complete tax picture
 // ============================================================
 function computeAll() {
@@ -293,8 +337,11 @@ function computeAll() {
     educationCredit = Math.min(num('education-expenses') * 0.20, 2000);
   }
 
-  // Premium Tax Credit
-  const ptcNet = hasPTC ? num('ptc-net') : 0;
+  // Premium Tax Credit — Form 8962 (calculated from 1095-A inputs + AGI)
+  const ptc8962 = hasPTC
+    ? calcForm8962(agi, num('f8962-family-size') || 1, num('f1095a-enroll-prem'), num('f1095a-slcsp'), num('f1095a-aptc'))
+    : null;
+  const ptcNet    = ptc8962 ? ptc8962.netPTC : 0;
   const ptcCredit = Math.max(0, ptcNet);
   const ptcRepay  = Math.max(0, -ptcNet);
 
@@ -365,7 +412,7 @@ function computeAll() {
     // Tax
     ordinaryTax, prefTax, federalTax, niit, addlMedicareTax,
     // Credits
-    childCareCredit, educationCredit, ptcCredit, ptcRepay, ptcNet, totalCredits,
+    childCareCredit, educationCredit, ptcCredit, ptcRepay, ptcNet, ptc8962, totalCredits,
     taxAfterCredits, totalTax,
     // Payments
     fedWithheld, fedEstimated, ssTaxed, medicareTaxed,
@@ -453,6 +500,7 @@ function recalculate() {
     updateDeductionComparison(t);
     updateIRAMessage(t);
     updateCOPreview(t);
+    updateForm8962Display(t);
   } catch(e) {
     console.error('Calculation error:', e);
   }
@@ -517,6 +565,36 @@ function updateCOPreview(t) {
         </table>
       </div>
     </div>`;
+}
+
+function updateForm8962Display(t) {
+  const resultsEl = document.getElementById('form8962-results');
+  if (!resultsEl) return;
+  const p = t.ptc8962;
+  if (!p || radio('has-marketplace') !== 'yes') {
+    resultsEl.style.display = 'none';
+    return;
+  }
+  resultsEl.style.display = '';
+  const setText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  setText('f8962-magi',       fmt(t.agi));
+  setText('f8962-fpl',        fmt(p.fpl));
+  setText('f8962-fpl-pct',    p.fplPct.toFixed(1) + '%');
+  setText('f8962-app-pct',    (p.applicablePct * 100).toFixed(2) + '%');
+  setText('f8962-contrib',    fmt(p.annualContrib));
+  setText('f8962-enroll',     fmt(p.enrollPrem));
+  setText('f8962-slcsp-disp', fmt(p.slcspPrem));
+  setText('f8962-max-ptc',    fmt(p.maxPTC));
+  setText('f8962-annual-ptc', fmt(p.annualPTC));
+  setText('f8962-aptc-disp',  fmt(p.aptcPaid));
+  const netEl = document.getElementById('f8962-net-ptc');
+  if (netEl) {
+    netEl.textContent = (p.netPTC >= 0 ? '+' : '') + fmt(p.netPTC);
+    netEl.style.color = p.netPTC >= 0 ? 'var(--green)' : 'var(--red)';
+  }
 }
 
 // ============================================================
@@ -795,9 +873,11 @@ function generateAndShowSummary() {
       ${tableRow('16', 'Tax (from Tax Table or Computation Worksheet)', fmtLine(t.federalTax),
         `Use the 2025 Tax Computation Worksheet, Section ${t.isHOH ? 'D (HOH)' : 'A (Single)'} if taxable income ≥ $100,000`)}
       ${t.niit > 0 ? tableRow('17', 'Net investment income tax (Form 8960)', fmtLine(t.niit)) : skipRow('Line 17 — AMT / Form 8960 (none)')}
-      ${tableRow('18', 'Add Lines 16 and 17', fmtLine(t.federalTax + t.niit))}
+      ${t.ptcRepay > 0 ? tableRow('17', 'Excess advance Premium Tax Credit repayment (Schedule 2, Line 2 → Line 10)', fmtLine(t.ptcRepay), 'From Form 8962, Line 27 — see Form 8962 detail below', 'owe') : ''}
+      ${tableRow('18', 'Add Lines 16 and 17', fmtLine(t.federalTax + t.niit + t.ptcRepay))}
       ${t.childCareCredit > 0 ? tableRow('19', 'Child & dependent care credit (Form 2441)', fmtLine(t.childCareCredit)) : skipRow('Line 19 — Child & dependent care credit (none)')}
       ${t.educationCredit > 0 ? tableRow('20', 'Education credits (Form 8863)', fmtLine(t.educationCredit)) : skipRow('Line 20 — Education credits (none)')}
+      ${t.ptcCredit > 0 ? tableRow('31', 'Net Premium Tax Credit — refundable (Schedule 3, Line 9 → Line 15)', fmtLine(t.ptcCredit), 'From Form 8962, Line 26 — see Form 8962 detail below', 'refund') : skipRow('Line 31 — Premium Tax Credit (none, or repayment applies)')}
       ${tableRow('24', 'Total tax (after credits)', fmtLine(t.totalTax))}
       ${sectionRow('Payments')}
       ${tableRow('25a', 'Federal income tax withheld (W-2 Box 2)', fmtLine(t.fedWithheld), 'From your Minerva University W-2')}
@@ -950,6 +1030,34 @@ function generateAndShowSummary() {
         : tableRow('Owed', 'Colorado amount owed', fmtLine(t.coOwed), 'Pay by April 15, 2026 at Revenue.Colorado.gov', 'owe')}
     </table>`;
 
+  // ── FORM 8962 ──
+  const hasF8962 = t.ptc8962 !== null;
+  const p = t.ptc8962;
+  const f8962Summary = hasF8962 ? `
+    <table class="form-line-table">
+      ${sectionRow('Form 8962 — Premium Tax Credit (PTC)')}
+      ${sectionRow('Part I — Annual and Monthly Contribution Amount')}
+      ${tableRow('1', 'Family size', String(Math.max(1, Math.round(num('f8962-family-size') || 1))))}
+      ${tableRow('3', 'Household income (MAGI)', fmtLine(t.agi), 'Same as your Form 1040 AGI (Line 11)')}
+      ${tableRow('4', 'Federal poverty line', fmtLine(p.fpl), '2025 HHS guidelines for your household size')}
+      ${tableRow('5', 'Federal poverty line percentage', p.fplPct.toFixed(1) + '%', 'Line 3 ÷ Line 4 × 100')}
+      ${tableRow('7', 'Applicable figure (Table 2)', (p.applicablePct * 100).toFixed(2) + '%', 'Contribution percentage from IRS Table 2 based on Line 5')}
+      ${tableRow('8a', 'Annual contribution amount', fmtLine(p.annualContrib), 'Line 3 × Line 7 — the amount you are expected to pay toward premiums')}
+      ${tableRow('8b', 'Monthly contribution amount', fmtLine(p.annualContrib / 12), 'Line 8a ÷ 12')}
+      ${sectionRow('Part II — Reconciliation of Advance Payment of PTC (annual method, all months same plan)')}
+      ${tableRow('11a', 'Annual enrollment premium (1095-A Col A)', fmtLine(p.enrollPrem))}
+      ${tableRow('11b', 'Annual SLCSP premium (1095-A Col B)', fmtLine(p.slcspPrem), 'Benchmark Second Lowest Cost Silver Plan for your area')}
+      ${tableRow('11c', 'Annual advance PTC paid (1095-A Col C)', fmtLine(p.aptcPaid), 'Government subsidy paid directly to Connect for Health Colorado')}
+      ${tableRow('11d', 'Maximum annual PTC', fmtLine(p.maxPTC), 'Line 11b minus Line 8a (cannot be less than $0)')}
+      ${tableRow('11e', 'Annual PTC', fmtLine(p.annualPTC), 'Smaller of Line 11a or Line 11d')}
+      ${sectionRow('Part III — Repayment of Excess Advance PTC')}
+      ${tableRow('24', 'Total Premium Tax Credit', fmtLine(p.annualPTC), 'From Line 11e')}
+      ${tableRow('25', 'Advance PTC already paid', fmtLine(p.aptcPaid), 'From Line 11c')}
+      ${p.netPTC >= 0
+        ? tableRow('26', 'Net Premium Tax Credit (credit — you get more back)', fmtLine(p.netPTC), 'Line 24 minus Line 25. Enter on Schedule 3, Line 9.', 'refund')
+        : tableRow('27', 'Excess advance PTC to repay', fmtLine(-p.netPTC), 'Line 25 minus Line 24. Enter on Schedule 2, Line 2.', 'owe')}
+    </table>` : '';
+
   // ── Next Steps ──
   const nextSteps = `
     <table class="form-line-table">
@@ -957,7 +1065,7 @@ function generateAndShowSummary() {
       ${tableRow('Step 1', 'Go to IRS.gov/FreeFile', 'Start at IRS.gov/FreeFile (not the software companies\' sites directly)')}
       ${tableRow('Step 2', 'Select "Free File Fillable Forms"', 'No income limit. Available January 26, 2026.')}
       ${tableRow('Step 3', 'Create an account and start Form 1040', 'You will need your prior-year AGI ($192,967) to verify your identity')}
-      ${tableRow('Step 4', 'Enter Federal forms in this order', 'Schedule E → Schedule 1 → Schedule 1-A (if applicable) → Form 1040')}
+      ${tableRow('Step 4', 'Enter Federal forms in this order', hasF8962 ? 'Form 8962 → Schedule 2/3 → Schedule E → Schedule 1 → Schedule 1-A (if applicable) → Form 1040' : 'Schedule E → Schedule 1 → Schedule 1-A (if applicable) → Form 1040')}
       ${tableRow('Step 5', 'File Colorado return', 'Colorado can be filed at Revenue.Colorado.gov (MyColorado portal) or through the same e-file submission')}
       ${tableRow('Deadline', 'Filing deadline', 'April 15, 2026 for both federal and Colorado. Extension available (Form 4868 federal / DR 0158-I Colorado) — but an extension to file is NOT an extension to pay.')}
       ${tableRow('Payment', 'If you owe federal taxes', 'Pay at IRS.gov/payments (Direct Pay is free). Reference: tax year 2025, Form 1040')}
@@ -979,6 +1087,8 @@ function generateAndShowSummary() {
     </div>
 
     ${hasSch1A ? `<div class="summary-section"><div class="summary-section-title">Schedule 1-A — New 2025 Deductions</div>${sch1a}</div>` : ''}
+
+    ${hasF8962 ? `<div class="summary-section"><div class="summary-section-title">Form 8962 — Premium Tax Credit (Connect for Health Colorado)</div>${f8962Summary}</div>` : ''}
 
     <div class="summary-section">
       <div class="summary-section-title">Schedule E, Part II — S-Corporation</div>

@@ -941,31 +941,81 @@
 
         <!-- Premium Tax Credit -->
         <div class="field-group">
-          <label>Did you buy health insurance through the Healthcare.gov Marketplace in 2025?</label>
-          <div class="field-hint">If yes, you should have received Form 1095-A. You need to reconcile any advance payments with the actual Premium Tax Credit using Form 8962.</div>
+          <label>Did you buy health insurance through a Health Insurance Marketplace in 2025?</label>
+          <div class="field-hint">This includes Connect for Health Colorado (Colorado's state exchange) and Healthcare.gov. If yes, you should have received Form 1095-A and need to complete Form 8962 to reconcile any advance Premium Tax Credit payments.</div>
           <div class="radio-group">
             <label class="radio-option">
               <input type="radio" name="has-marketplace" value="no" checked onchange="toggleMarketplace()">
-              <div><div class="option-label">No — I have employer coverage or another non-Marketplace plan</div></div>
+              <div><div class="option-label">No — I have employer coverage, Medicare/Medicaid, or another non-Marketplace plan</div></div>
             </label>
             <label class="radio-option">
               <input type="radio" name="has-marketplace" value="yes" onchange="toggleMarketplace()">
-              <div><div class="option-label">Yes — I had Marketplace health insurance and received Form 1095-A</div></div>
+              <div><div class="option-label">Yes — I purchased coverage through Connect for Health Colorado or Healthcare.gov and received Form 1095-A</div></div>
             </label>
           </div>
           <div class="conditional-section" id="marketplace-section">
-            <div class="callout callout-warn">
+            <div class="callout callout-info" style="margin-bottom:1rem;">
               <div class="callout-body" style="font-size:0.85rem;">
-                Marketplace coverage requires completing Form 8962. The net Premium Tax Credit (or repayment) will be entered on Schedule 3, Line 9 or Schedule 2, Line 2. Please complete Form 8962 separately using your Form 1095-A, then enter the result below.
+                <strong>Form 8962 — Premium Tax Credit</strong><br>
+                Enter the three annual totals from your Form 1095-A (add up all 12 months for each column). This tool will calculate Form 8962 for you and determine your net credit or repayment amount, which flows to Schedule 3, Line 9 or Schedule 2, Line 2.
               </div>
             </div>
+
+            <div class="section-label" style="margin-top:0.5rem;">Form 1095-A — Amounts from Your Marketplace Statement</div>
+
             <div class="field-row">
               <div class="field-group">
-                <label for="ptc-net">Net Premium Tax Credit from Form 8962, Line 26</label>
-                <div class="field-hint">Positive = credit (refund); negative = repayment (you owe more).</div>
+                <label for="f1095a-enroll-prem">Column A — Annual Enrollment Premium</label>
+                <div class="field-hint">Add up all 12 monthly amounts in Column A (your plan's full monthly premium).</div>
                 <div class="money-input-wrap">
-                  <input type="number" id="ptc-net" step="0.01" placeholder="0.00" oninput="recalculate()">
+                  <input type="number" id="f1095a-enroll-prem" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
                 </div>
+              </div>
+              <div class="field-group">
+                <label for="f1095a-slcsp">Column B — Annual SLCSP Premium</label>
+                <div class="field-hint">Add up all 12 monthly amounts in Column B (the benchmark Silver plan for your area). If any months show $0, visit <strong>healthcare.gov/tax-tool</strong> to look up the correct SLCSP for those months.</div>
+                <div class="money-input-wrap">
+                  <input type="number" id="f1095a-slcsp" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="f1095a-aptc">Column C — Annual Advance PTC Paid</label>
+                <div class="field-hint">Add up all 12 monthly amounts in Column C (the government subsidy paid directly to your insurer each month).</div>
+                <div class="money-input-wrap">
+                  <input type="number" id="f1095a-aptc" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="f8962-family-size">Tax Household Size (Line 1)</label>
+                <div class="field-hint">Count yourself plus any dependents you claim on this return. Used to look up the Federal Poverty Line.</div>
+                <input type="number" id="f8962-family-size" min="1" max="15" step="1" value="1" oninput="recalculate()" style="width:90px; padding:0.5rem 0.75rem; border:1px solid var(--gray-200); border-radius:6px; font-size:1rem;">
+              </div>
+            </div>
+
+            <!-- Auto-computed Form 8962 results -->
+            <div id="form8962-results" class="callout callout-info" style="margin-top:1.25rem; display:none;">
+              <div class="callout-body" style="font-size:0.85rem;">
+                <strong>Form 8962 — Calculated Results</strong>
+                <table style="width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:0.82rem;">
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Household Income / MAGI (Line 3)</td><td style="text-align:right; font-variant-numeric:tabular-nums;" id="f8962-magi">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Federal Poverty Line for your household (Line 4)</td><td style="text-align:right;" id="f8962-fpl">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Income as % of Federal Poverty Line (Line 5)</td><td style="text-align:right;" id="f8962-fpl-pct">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Applicable Figure / Contribution % (Line 7)</td><td style="text-align:right;" id="f8962-app-pct">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual Contribution Amount (Line 8a)</td><td style="text-align:right;" id="f8962-contrib">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual Enrollment Premium — 1095-A Col A (Line 11a)</td><td style="text-align:right;" id="f8962-enroll">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual SLCSP Premium — 1095-A Col B (Line 11b)</td><td style="text-align:right;" id="f8962-slcsp-disp">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual Maximum PTC (Line 11d)</td><td style="text-align:right;" id="f8962-max-ptc">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Your Annual PTC (Line 24)</td><td style="text-align:right;" id="f8962-annual-ptc">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Advance PTC Already Paid (Line 25)</td><td style="text-align:right;" id="f8962-aptc-disp">—</td></tr>
+                  <tr style="border-top:1px solid var(--gray-300); font-weight:700;">
+                    <td style="padding:5px 0 3px;">Net PTC — credit (+) or repayment (−) &nbsp;<span style="font-weight:400;">(Line 26)</span></td>
+                    <td style="text-align:right;" id="f8962-net-ptc">—</td>
+                  </tr>
+                </table>
+                <div style="margin-top:0.5rem; color:var(--gray-500); font-size:0.78rem;">Calculation uses 2025 IRS Table 2 applicable percentages and 2025 HHS Federal Poverty Guidelines. Verify final amounts against the official Form 8962 instructions before filing.</div>
               </div>
             </div>
           </div>
