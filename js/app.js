@@ -940,13 +940,15 @@ function generateAndShowSummary() {
       ${tableRow('15', 'Taxable income (Line 11 − Line 12 − Line 13)', fmtLine(t.taxableIncome), '', 'highlight')}
       ${tableRow('16', 'Tax (from Tax Table or Computation Worksheet)', fmtLine(t.federalTax),
         `Use the 2025 Tax Computation Worksheet, Section ${t.isHOH ? 'D (HOH)' : 'A (Single)'} if taxable income ≥ $100,000`)}
-      ${t.niit > 0 ? tableRow('17', 'Net investment income tax (Form 8960)', fmtLine(t.niit)) : skipRow('Line 17 — AMT / Form 8960 (none)')}
-      ${t.ptcRepay > 0 ? tableRow('17', 'Excess advance Premium Tax Credit repayment (Schedule 2, Line 2 → Line 10)', fmtLine(t.ptcRepay), 'From Form 8962, Line 27 — see Form 8962 detail below', 'owe') : ''}
-      ${tableRow('18', 'Add Lines 16 and 17', fmtLine(t.federalTax + t.niit + t.ptcRepay))}
-      ${t.childCareCredit > 0 ? tableRow('19', 'Child & dependent care credit (Form 2441)', fmtLine(t.childCareCredit)) : skipRow('Line 19 — Child & dependent care credit (none)')}
-      ${t.educationCredit > 0 ? tableRow('20', 'Education credits (Form 8863)', fmtLine(t.educationCredit)) : skipRow('Line 20 — Education credits (none)')}
-      ${t.ptcCredit > 0 ? tableRow('31', 'Net Premium Tax Credit — refundable (Schedule 3, Line 9 → Line 15)', fmtLine(t.ptcCredit), 'From Form 8962, Line 26 — see Form 8962 detail below', 'refund') : skipRow('Line 31 — Premium Tax Credit (none, or repayment applies)')}
-      ${tableRow('24', 'Total tax (after credits)', fmtLine(t.totalTax))}
+      ${(t.niit + t.ptcRepay + t.addlMedicareTax) > 0
+        ? tableRow('17', 'Other taxes from Schedule 2, Line 10', fmtLine(t.niit + t.ptcRepay + t.addlMedicareTax),
+            `Includes: ${[t.niit > 0 ? `NIIT ${fmt(t.niit)}` : '', t.ptcRepay > 0 ? `excess PTC repayment ${fmt(t.ptcRepay)}` : '', t.addlMedicareTax > 0 ? `add\'l Medicare tax ${fmt(t.addlMedicareTax)}` : ''].filter(Boolean).join(', ')} — see Schedule 2 below`, 'owe')
+        : skipRow('Line 17 — Other taxes from Schedule 2 (none)')}
+      ${tableRow('18', 'Add Lines 16 and 17', fmtLine(t.federalTax + t.niit + t.ptcRepay + t.addlMedicareTax))}
+      ${t.childCareCredit > 0 ? tableRow('19', 'Child & dependent care credit (Form 2441, Line 11)', fmtLine(t.childCareCredit), 'See Form 2441 detail below') : skipRow('Line 19 — Child & dependent care credit (none)')}
+      ${t.educationCredit > 0 ? tableRow('20', 'Education credits (Form 8863)', fmtLine(t.educationCredit), 'See Form 8863 detail below') : skipRow('Line 20 — Education credits (none)')}
+      ${t.totalCredits > 0 ? tableRow('24', 'Other nonrefundable credits from Schedule 3, Line 8', fmtLine(t.totalCredits), 'See Schedule 3 detail below') : skipRow('Line 24 — Other nonrefundable credits (none)')}
+      ${t.ptcCredit > 0 ? tableRow('30', 'Other payments / refundable credits from Schedule 3, Line 15', fmtLine(t.ptcCredit), 'Net Premium Tax Credit — see Form 8962 and Schedule 3 below', 'refund') : skipRow('Line 30 — Refundable credits from Schedule 3 (none)')}
       ${sectionRow('Payments')}
       ${tableRow('25a', 'Federal income tax withheld (W-2 Box 2)', fmtLine(t.fedWithheld), 'From your Minerva University W-2')}
       ${t.fedEstimated > 0 ? tableRow('26', 'Estimated tax payments (Form 1040-ES)', fmtLine(t.fedEstimated)) : skipRow('Line 26 — Estimated tax payments (none)')}
@@ -1164,19 +1166,239 @@ function generateAndShowSummary() {
         : tableRow('27', 'Excess advance PTC to repay', fmtLine(-p.netPTC), 'Line 25 minus Line 24. Enter on Schedule 2, Line 2.', 'owe')}
     </table>` : '';
 
-  // ── Next Steps ──
+  // ── SCHEDULE B ──
+  const totalInterest = t.taxableInt;
+  const totalDivs     = t.ordDiv;
+  const needsSchB     = totalInterest > 1500 || totalDivs > 1500;
+  const schBSummary   = (totalInterest > 0 || totalDivs > 0) ? `
+    <table class="form-line-table">
+      ${sectionRow('Schedule B (Form 1040) — Interest and Ordinary Dividends')}
+      ${needsSchB ? sectionRow('Schedule B is REQUIRED because your interest or dividends exceed $1,500') : sectionRow('Schedule B is recommended (required if interest or dividends exceed $1,500)')}
+      ${sectionRow('Part I — Interest')}
+      ${tableRow('1', 'Payer(s) and amounts', 'List each 1099-INT payer separately in Free File Fillable Forms', 'Enter each bank, brokerage, or institution name and the interest amount from Box 1 of each 1099-INT')}
+      ${tableRow('2', 'Total taxable interest', fmtLine(num('interest-taxable')), 'Flows to Form 1040, Line 2b')}
+      ${num('interest-us-govt') > 0 ? tableRow('3', 'U.S. savings bond / Treasury interest (Box 3)', fmtLine(num('interest-us-govt')), 'Also included in Line 2 total; separately tracked for Colorado subtraction') : skipRow('Line 3 — U.S. bond interest (none)')}
+      ${tableRow('4', 'Total (Line 2)', fmtLine(num('interest-taxable')), 'This is your total taxable interest')}
+      ${sectionRow('Part II — Ordinary Dividends')}
+      ${tableRow('5', 'Payer(s) and amounts', 'List each 1099-DIV payer separately', 'Enter each brokerage or company name and Box 1a of each 1099-DIV')}
+      ${tableRow('6', 'Total ordinary dividends', fmtLine(t.ordDiv), 'Flows to Form 1040, Line 3b')}
+      ${sectionRow('Part III — Foreign Accounts and Trusts')}
+      ${tableRow('7a', 'Foreign financial account?', 'Answer Yes or No', 'Check "Yes" only if you had a financial interest in or signature authority over a foreign bank, securities, or other financial account')}
+    </table>` : '';
+
+  // ── SCHEDULE D + FORM 8949 ──
+  const hasCapGains = radio('has-capital-gains') === 'yes';
+  const schDSummary = hasCapGains ? `
+    <table class="form-line-table">
+      ${sectionRow('Form 8949 — Sales and Other Dispositions of Capital Assets')}
+      ${sectionRow('Part I — Short-Term (held 1 year or less) — taxed as ordinary income')}
+      ${tableRow('Col A', 'Description of property', 'e.g., "100 sh Apple Inc" — enter each transaction from your 1099-B')}
+      ${tableRow('Col B', 'Date acquired', 'MM/DD/YYYY format')}
+      ${tableRow('Col C', 'Date sold', 'MM/DD/YYYY format')}
+      ${tableRow('Col D', 'Proceeds (sales price)', 'From 1099-B Box 1d')}
+      ${tableRow('Col E', 'Cost or other basis', 'From 1099-B Box 1e — your purchase price + commissions')}
+      ${tableRow('Col H', 'Gain or (loss)', 'Col D minus Col E. Totals flow to Schedule D, Line 1 or Line 2.')}
+      ${sectionRow('Part II — Long-Term (held more than 1 year) — preferential tax rates')}
+      ${tableRow('Col H', 'Gain or (loss)', 'Totals flow to Schedule D, Line 8 or Line 9.')}
+      ${sectionRow('Schedule D — Capital Gains and Losses')}
+      ${sectionRow('Part I — Short-Term Capital Gains and Losses')}
+      ${t.stcg !== 0 ? tableRow('7', 'Net short-term capital gain (loss)', fmtLine(t.stcg), 'Enter here; taxed at ordinary income rates') : skipRow('Lines 1–7 — No short-term transactions entered')}
+      ${sectionRow('Part II — Long-Term Capital Gains and Losses')}
+      ${t.ltcg !== 0 ? tableRow('15', 'Net long-term capital gain (loss)', fmtLine(t.ltcg), 'Enter here; taxed at 0%, 15%, or 20% depending on your income') : skipRow('Lines 8–15 — No long-term transactions entered')}
+      ${sectionRow('Part III — Summary')}
+      ${tableRow('16', 'Combined net capital gain (loss)', fmtLine(t.capGainNet))}
+      ${t.capGainNet < -3000
+        ? tableRow('21', 'Capital loss deduction limit', fmtLine(-3000), `You have ${fmt(Math.abs(t.capGainNet) - 3000)} in losses that carry forward to 2026`, 'owe')
+        : tableRow('17 / 19', 'Net capital gain (loss) → Form 1040, Line 7', fmtLine(t.capGain1040))}
+      ${t.ltcg > 0 ? tableRow('—', 'LTCG tax rates (28% rate gain worksheet if assets include collectibles or Sec. 1202 stock)', 'Taxed at 0% (if taxable income ≤ $48,350), 15% (≤ $533,400), or 20% (above $533,400)') : ''}
+    </table>` : '';
+
+  // ── FORM 8960 ──
+  const hasNIIT = t.niit > 0;
+  const netInvIncome = Math.max(0, t.taxableInt + t.ordDiv + t.capGain1040);
+  const f8960Summary = hasNIIT ? `
+    <table class="form-line-table">
+      ${sectionRow('Form 8960 — Net Investment Income Tax')}
+      ${sectionRow('Part I — Net Investment Income')}
+      ${tableRow('1', 'Taxable interest', fmtLine(t.taxableInt))}
+      ${tableRow('2', 'Ordinary dividends', fmtLine(t.ordDiv))}
+      ${tableRow('3', 'Annuities (none)', '—')}
+      ${t.capGain1040 !== 0 ? tableRow('4a', 'Net capital gain from Schedule D', fmtLine(t.capGain1040)) : skipRow('Lines 4–5 — Capital gains / passive income (none)')}
+      ${tableRow('8', 'Net investment income (add lines 1–7)', fmtLine(netInvIncome))}
+      ${sectionRow('Part II — Net Investment Income Tax')}
+      ${tableRow('9a', 'Modified adjusted gross income (MAGI)', fmtLine(t.agi))}
+      ${tableRow('9b', 'Threshold for your filing status (Single)', fmtLine(200000))}
+      ${tableRow('9c', 'MAGI exceeding threshold (Line 9a − Line 9b)', fmtLine(Math.max(0, t.agi - 200000)))}
+      ${tableRow('10', 'Smaller of Line 8 or Line 9c', fmtLine(Math.min(netInvIncome, Math.max(0, t.agi - 200000))))}
+      ${tableRow('12', 'Net Investment Income Tax (Line 10 × 3.8%) → Form 1040 via Schedule 2', fmtLine(t.niit), '', 'owe')}
+    </table>` : '';
+
+  // ── SCHEDULE 2 ──
+  const hasSch2 = (t.niit + t.ptcRepay + t.addlMedicareTax) > 0;
+  const sch2Summary = hasSch2 ? `
+    <table class="form-line-table">
+      ${sectionRow('Schedule 2 (Form 1040) — Additional Taxes')}
+      ${sectionRow('Part I — Alternative Minimum Tax')}
+      ${skipRow('Line 1 — Alternative Minimum Tax (AMT) — does not apply based on your income profile')}
+      ${sectionRow('Part II — Other Taxes')}
+      ${t.ptcRepay > 0
+        ? tableRow('2', 'Excess advance premium tax credit repayment (Form 8962, Line 27)', fmtLine(t.ptcRepay), 'You received more in advance PTC than you qualified for — this is the repayment', 'owe')
+        : skipRow('Line 2 — Excess advance PTC repayment (none — you had a net credit)')}
+      ${t.niit > 0
+        ? tableRow('12', 'Net investment income tax (Form 8960, Line 12)', fmtLine(t.niit), '', 'owe')
+        : skipRow('Line 12 — NIIT (none — income below threshold)')}
+      ${t.addlMedicareTax > 0
+        ? tableRow('11', 'Additional Medicare Tax (Form 8959)', fmtLine(t.addlMedicareTax), 'Wages over $200,000 subject to extra 0.9%', 'owe')
+        : skipRow('Line 11 — Additional Medicare Tax (none)')}
+      ${tableRow('10', 'Total additional taxes → Form 1040, Line 17', fmtLine(t.niit + t.ptcRepay + t.addlMedicareTax), '', 'owe')}
+    </table>` : '';
+
+  // ── SCHEDULE 3 ──
+  const hasSch3 = (t.childCareCredit + t.educationCredit + t.ptcCredit) > 0;
+  const sch3Summary = hasSch3 ? `
+    <table class="form-line-table">
+      ${sectionRow('Schedule 3 (Form 1040) — Additional Credits and Payments')}
+      ${sectionRow('Part I — Nonrefundable Credits')}
+      ${t.childCareCredit > 0
+        ? tableRow('2', 'Child and dependent care credit (Form 2441, Line 11)', fmtLine(t.childCareCredit), 'See Form 2441 below for calculation detail', 'refund')
+        : skipRow('Line 2 — Child and dependent care credit (none)')}
+      ${t.educationCredit > 0
+        ? tableRow('3', 'Education credits (Form 8863)', fmtLine(t.educationCredit), 'See Form 8863 below for calculation detail', 'refund')
+        : skipRow('Line 3 — Education credits (none)')}
+      ${tableRow('8', 'Total nonrefundable credits (Part I) → Form 1040, Line 24', fmtLine(t.childCareCredit + t.educationCredit), '', 'refund')}
+      ${sectionRow('Part II — Other Payments and Refundable Credits')}
+      ${t.ptcCredit > 0
+        ? tableRow('9', 'Net premium tax credit (Form 8962, Line 26)', fmtLine(t.ptcCredit), 'Refundable — can increase your refund beyond tax owed', 'refund')
+        : skipRow('Line 9 — Net premium tax credit (none — or repayment applies)')}
+      ${tableRow('15', 'Total other payments / refundable credits → Form 1040, Line 30', fmtLine(t.ptcCredit), '', 'refund')}
+    </table>` : '';
+
+  // ── FORM 8889 ──
+  const hasHSA = radio('has-hsa') === 'yes';
+  const hsaContrib = num('hsa-contribution');
+  const w2Box12W   = num('w2-box12-w');
+  const f8889Summary = hasHSA ? `
+    <table class="form-line-table">
+      ${sectionRow('Form 8889 — Health Savings Accounts (HSAs)')}
+      ${tableRow('1', 'Coverage type', 'Self-only HDHP (check box for self-only or family based on your plan)')}
+      ${tableRow('2', 'HSA contributions you made (not including employer)', fmtLine(hsaContrib))}
+      ${w2Box12W > 0 ? tableRow('9', 'Employer contributions (W-2 Box 12, Code W)', fmtLine(w2Box12W)) : skipRow('Line 9 — Employer HSA contributions (none or not entered)')}
+      ${tableRow('5', '2025 HSA contribution limit (self-only)', fmtLine(4300), 'Or $8,550 for family coverage; add $1,000 if age 55+')}
+      ${tableRow('13', 'HSA deduction', fmtLine(t.hsaDeduction), 'Smaller of Line 2 and Line 8. Flows to Schedule 1, Line 13.', 'refund')}
+      ${sectionRow('Part II — HSA Distributions (if you took money out)')}
+      ${tableRow('—', 'Qualified medical expenses', 'Distributions for qualified medical expenses are tax-free. Non-qualified distributions are taxable + 20% penalty. Report on Lines 14a–17.')}
+    </table>` : '';
+
+  // ── FORM 2441 ──
+  const hasChildCareForm = radio('has-childcare') === 'yes';
+  const f2441Summary = hasChildCareForm ? `
+    <table class="form-line-table">
+      ${sectionRow('Form 2441 — Child and Dependent Care Expenses')}
+      ${sectionRow('Part I — Persons or Organizations Who Provided the Care')}
+      ${tableRow('1', 'Provider name', 'Enter each care provider name (daycare center, nanny, etc.)')}
+      ${tableRow('1', 'Provider address', 'Street address of the care provider')}
+      ${tableRow('1', 'Provider TIN / SSN / EIN', 'Required — the IRS will verify this. Get it from the provider.')}
+      ${tableRow('1', 'Amount paid', fmtLine(num('childcare-expenses')))}
+      ${sectionRow('Part II — Credit Calculation')}
+      ${tableRow('2', 'Qualifying persons', 'Enter name and SSN of each qualifying child or dependent under age 13')}
+      ${tableRow('3', 'Qualifying expenses incurred (maximum $3,000 for 1 child / $6,000 for 2+)', fmtLine(Math.min(num('childcare-expenses'), 3000)))}
+      ${tableRow('8', 'Applicable credit percentage', t.agi > 43000 ? '20%' : t.agi > 33000 ? '25%' : t.agi > 23000 ? '30%' : '35%', `Based on your AGI of ${fmt(t.agi)}`)}
+      ${tableRow('11', 'Child and dependent care credit → Form 1040, Line 19 / Schedule 3, Line 2', fmtLine(t.childCareCredit), '', 'refund')}
+      ${sectionRow('Note on Free File Fillable Forms')}
+      ${tableRow('—', 'In Free File Fillable Forms', 'Add Form 2441 using the "Add" button from Form 1040. Complete the provider information in Part I before Part II.')}
+    </table>` : '';
+
+  // ── FORM 8863 ──
+  const hasEducationForm = radio('has-education') === 'yes';
+  const f8863Summary = hasEducationForm ? `
+    <table class="form-line-table">
+      ${sectionRow('Form 8863 — Education Credits (American Opportunity and Lifetime Learning Credits)')}
+      ${sectionRow('IMPORTANT: In Free File Fillable Forms, complete Part III BEFORE Parts I and II')}
+      ${sectionRow('Part III — Student and Educational Institution Information')}
+      ${tableRow('20', 'Student name', 'Your name (or qualifying student\'s name)')}
+      ${tableRow('20', 'Student SSN', 'Your Social Security Number')}
+      ${tableRow('20', 'Educational institution name and address', 'From your Form 1098-T')}
+      ${tableRow('20', 'Qualified expenses from 1098-T', fmtLine(num('education-expenses')), 'Box 1 of your Form 1098-T (adjusted for tax-free assistance)')}
+      ${tableRow('20', 'First 4 years of higher education?', 'Answer Yes/No — determines AOTC vs. Lifetime Learning Credit eligibility')}
+      ${sectionRow('Part II — Lifetime Learning Credit (if not eligible for AOTC)')}
+      ${tableRow('10', 'Adjusted qualified education expenses', fmtLine(num('education-expenses')))}
+      ${tableRow('14', 'Lifetime Learning Credit (20% of expenses, max $2,000)', fmtLine(t.educationCredit), 'Nonrefundable — flows to Schedule 3, Line 3', 'refund')}
+      ${sectionRow('Phase-out information')}
+      ${tableRow('—', 'LLC phase-out range (Single)', '$80,000 – $90,000 MAGI', 'Credit is reduced for income in this range and eliminated above $90,000')}
+    </table>` : '';
+
+  // ── FORM 4562 (depreciation in 1120-S) ──
+  const hasDepreciation = t.f1120s.depreciation > 0;
+  const f4562Summary = hasDepreciation ? `
+    <table class="form-line-table">
+      ${sectionRow('Form 4562 — Depreciation and Amortization (attached to Form 1120-S)')}
+      ${sectionRow('Note: In Free File Fillable Forms, Form 4562 must be added from its parent Schedule E — you cannot add it standalone')}
+      ${sectionRow('Part I — Election to Expense Certain Property (Section 179)')}
+      ${tableRow('1', 'Maximum Section 179 deduction (2025)', fmtLine(1220000), 'Total Section 179 deduction for all property cannot exceed $1,220,000 in 2025')}
+      ${tableRow('6', 'Listed property Section 179 (vehicles, computers)', 'Enter from Part V if applicable')}
+      ${tableRow('12', 'Section 179 expense deduction', fmtLine(t.f1120s.depreciation), 'Enter the portion claimed under Section 179')}
+      ${sectionRow('Part II — MACRS Depreciation (for multi-year property not expensed under Sec. 179)')}
+      ${tableRow('14b–g', 'MACRS property', 'Enter each asset: classification (5-yr, 7-yr, etc.), basis, recovery period, convention, method, and deduction')}
+      ${tableRow('22', 'Total MACRS depreciation', 'Subtotal of all MACRS deductions')}
+      ${tableRow('22+12', 'Total depreciation → Form 1120-S, Line 14', fmtLine(t.f1120s.depreciation))}
+    </table>` : '';
+
+  // ── Next Steps — Free File Fillable Forms ──
+  const formEntryOrder = [
+    hasCapGains ? 'Form 8949 (each transaction)' : '',
+    hasCapGains ? 'Schedule D' : '',
+    (totalInterest > 1500 || totalDivs > 1500) ? 'Schedule B' : '',
+    hasF8962    ? 'Form 8962' : '',
+    hasSch2     ? 'Schedule 2' : '',
+    hasSch3     ? 'Schedule 3' : '',
+    hasChildCareForm ? 'Form 2441' : '',
+    hasEducationForm ? 'Form 8863' : '',
+    hasHSA      ? 'Form 8889' : '',
+    hasNIIT     ? 'Form 8960' : '',
+    t.sch1a.total > 0 ? 'Schedule 1-A' : '',
+    'Schedule E (K-1 data from your finalized 1120-S)',
+    t.sliDeduction > 0 || t.iraDeduction > 0 || t.hsaDeduction > 0 || t.skorpK1 !== 0 ? 'Schedule 1' : '',
+    t.useItemized ? 'Schedule A' : '',
+    'Form 1040 (last — it pulls from all other forms)',
+  ].filter(Boolean).join(' → ');
+
   const nextSteps = `
     <table class="form-line-table">
-      ${sectionRow('How to File — Free File Fillable Forms')}
-      ${tableRow('Step 1', 'Go to IRS.gov/FreeFile', 'Start at IRS.gov/FreeFile (not the software companies\' sites directly)')}
-      ${tableRow('Step 2', 'Select "Free File Fillable Forms"', 'No income limit. Available January 26, 2026.')}
-      ${tableRow('Step 3', 'File Form 1120-S for your S-corporation', `Due March 17, 2026 for ${scorpName} (EIN ${scorpEIN}). File separately at IRS.gov or via tax software. Extension: Form 7004 (extends to September 15, 2026). After filing, you will have the finalized K-1 to attach to your personal return.`)}
-      ${tableRow('Step 4', 'Create an account and start Form 1040', 'You will need your prior-year AGI ($192,967) to verify your identity')}
-      ${tableRow('Step 5', 'Enter Federal forms in this order (personal return)', hasF8962 ? 'Form 8962 → Schedule 2/3 → Schedule E (K-1 data) → Schedule 1 → Schedule 1-A (if applicable) → Form 1040' : 'Schedule E (K-1 data) → Schedule 1 → Schedule 1-A (if applicable) → Form 1040')}
-      ${tableRow('Step 6', 'File Colorado return', 'Colorado can be filed at Revenue.Colorado.gov (MyColorado portal) or through the same e-file submission')}
-      ${tableRow('Deadline', 'Filing deadline', 'April 15, 2026 for both federal and Colorado. Extension available (Form 4868 federal / DR 0158-I Colorado) — but an extension to file is NOT an extension to pay.')}
-      ${tableRow('Payment', 'If you owe federal taxes', 'Pay at IRS.gov/payments (Direct Pay is free). Reference: tax year 2025, Form 1040')}
-      ${tableRow('Payment', 'If you owe Colorado taxes', 'Pay at Revenue.Colorado.gov using e-check or credit card')}
+      ${sectionRow('Free File Fillable Forms — How to Use')}
+      ${tableRow('Access', 'Go to freefilefillableforms.com', 'Do NOT search for it on Google — go directly to freefilefillableforms.com or start at IRS.gov/FreeFile. Available January 26 – October 20, 2026.')}
+      ${tableRow('Account', 'Create an account', 'You will need a valid email address. One account per taxpayer.')}
+      ${tableRow('Start', 'Select Form 1040 to begin', 'The program works by building around Form 1040 — all other schedules are added and linked from it.')}
+      ${sectionRow('Critical Tips — Read Before You Start')}
+      ${tableRow('Do the Math', 'Use the "Do the Math" button', 'After entering data on any form, click "Do the Math" to run calculations. Calculated lines cannot be manually overridden — if a line calculates, you cannot type in it.')}
+      ${tableRow('Digital Assets', 'Answer the digital asset question', 'Form 1040 requires you to check YES or NO on the digital assets question (cryptocurrency, NFTs, etc.). Leaving it blank will prevent e-filing.')}
+      ${tableRow('Negatives', 'Use minus sign for negative numbers', 'Enter losses and negative amounts with a leading minus sign (e.g., -1500). Do NOT use parentheses or brackets — the form will not accept them.')}
+      ${tableRow('Adding Forms', 'Add forms using the "Add" button', 'Most supporting forms (Schedule A, Schedule B, Form 2441, etc.) must be added from Form 1040 using the "Add" button on the relevant line — not as standalone forms.')}
+      ${tableRow('4562 Note', 'Form 4562 must be added from Schedule E', 'If you have depreciation on your 1120-S, Form 4562 for your personal return must be added from Schedule E, not standalone.')}
+      ${tableRow('Education', 'Form 8863: complete Part III FIRST', 'For education credits, complete Part III (student and institution info) before entering data in Parts I and II.')}
+      ${tableRow('Attachments', 'Cannot attach PDF documents', 'You cannot attach any supporting documents (1099-B detail, 1095-A, depreciation schedules) as PDFs. Only forms available within the program can be included.')}
+      ${tableRow('Save often', 'Session can time out', 'Save your return frequently. The system may time out after periods of inactivity. You can return and complete later before the October 20 deadline.')}
+      ${sectionRow('Form Entry Order for Your Return (Personal 1040 — enter in this sequence)')}
+      ${tableRow('Order', formEntryOrder, '')}
+      ${sectionRow('Identity Verification')}
+      ${tableRow('Prior-year AGI', 'Enter your 2024 AGI to verify identity', '$192,967', 'This was your 2024 Married Filing Jointly AGI. Use the full joint amount on the e-filing identity screen.')}
+      ${tableRow('PIN', 'Alternative to AGI', 'You may use a Self-Select PIN instead of your prior-year AGI if you have one from last year')}
+      ${sectionRow('Corporate Return (Form 1120-S) — Filed Separately')}
+      ${tableRow('1120-S', `File Form 1120-S for ${scorpName} (EIN ${scorpEIN})`, `Due March 17, 2026. Use IRS.gov or commercial tax software — Free File Fillable Forms does NOT support Form 1120-S. Extension: Form 7004 (extends to September 15, 2026). File 1120-S first to get your finalized K-1 before completing your personal 1040.`)}
+      ${sectionRow('State Return — Colorado')}
+      ${tableRow('DR 0104', 'File Colorado return separately', 'Free File Fillable Forms is federal only. File Colorado at Revenue.Colorado.gov (MyColorado portal). Colorado due date: April 15, 2026.')}
+      ${tableRow('Extension', 'Colorado extension', 'File Colorado DR 0158-I by April 15 if you need more time. Colorado grants an automatic 6-month extension if you filed a federal extension.')}
+      ${sectionRow('Deadlines and Payment')}
+      ${tableRow('Federal', 'Filing and payment deadline', 'April 15, 2026. Extension to file: Form 4868 (extends to October 15, 2026). Extension to file ≠ extension to pay — pay any balance due by April 15.')}
+      ${t.fedOwed > 0
+        ? tableRow('Pay federal', `Federal balance due: ${fmt(t.fedOwed)}`, 'Pay at IRS.gov/DirectPay (free). Select "Balance Due" and tax year 2025, Form 1040. Also accepted: debit/credit card (fee applies), check made to "United States Treasury".')
+        : skipRow('Federal payment — you have a refund or break even')}
+      ${t.coOwed > 0
+        ? tableRow('Pay Colorado', `Colorado balance due: ${fmt(t.coOwed)}`, 'Pay at Revenue.Colorado.gov. Use e-check (free) or credit card. Reference DR 0104 for 2025.')
+        : skipRow('Colorado payment — you have a refund or break even')}
+      ${sectionRow('After You E-File')}
+      ${tableRow('Acknowledgment', 'Check your email', 'You will receive an acceptance or rejection email from customer_service@freefilefillableforms.com within 24–48 hours. Save the acknowledgment number.')}
+      ${tableRow('Rejection', 'If your return is rejected', 'Use the Error Search Tool at freefilefillableforms.com to find the cause. Common causes: wrong prior-year AGI, missing digital assets answer, or Social Security number mismatch.')}
+      ${tableRow('State link', 'IRS.gov/FreeFile resources', 'Program limitations and available forms: IRS.gov/e-file-providers/free-file-fillable-forms-program-limitations-and-available-forms')}
     </table>`;
 
   // ── Assemble final output ──
@@ -1188,6 +1410,10 @@ function generateAndShowSummary() {
       ${f1040}
     </div>
 
+    ${(totalInterest > 0 || totalDivs > 0) ? `<div class="summary-section"><div class="summary-section-title">Schedule B — Interest and Ordinary Dividends${needsSchB ? ' (REQUIRED — exceeds $1,500 threshold)' : ''}</div>${schBSummary}</div>` : ''}
+
+    ${hasCapGains ? `<div class="summary-section"><div class="summary-section-title">Form 8949 &amp; Schedule D — Capital Gains and Losses</div>${schDSummary}</div>` : ''}
+
     <div class="summary-section">
       <div class="summary-section-title">Schedule 1 — Additional Income &amp; Adjustments</div>
       ${hasSch1Income || hasSch1Adj ? sch1 : '<div class="callout callout-info"><div class="callout-body">No additional income or adjustments — you may not need Schedule 1.</div></div>'}
@@ -1196,6 +1422,18 @@ function generateAndShowSummary() {
     ${hasSch1A ? `<div class="summary-section"><div class="summary-section-title">Schedule 1-A — New 2025 Deductions</div>${sch1a}</div>` : ''}
 
     ${hasF8962 ? `<div class="summary-section"><div class="summary-section-title">Form 8962 — Premium Tax Credit (Connect for Health Colorado)</div>${f8962Summary}</div>` : ''}
+
+    ${hasSch2 ? `<div class="summary-section"><div class="summary-section-title">Schedule 2 — Additional Taxes</div>${sch2Summary}</div>` : ''}
+
+    ${hasSch3 ? `<div class="summary-section"><div class="summary-section-title">Schedule 3 — Additional Credits and Payments</div>${sch3Summary}</div>` : ''}
+
+    ${hasNIIT ? `<div class="summary-section"><div class="summary-section-title">Form 8960 — Net Investment Income Tax</div>${f8960Summary}</div>` : ''}
+
+    ${hasChildCareForm ? `<div class="summary-section"><div class="summary-section-title">Form 2441 — Child and Dependent Care Expenses</div>${f2441Summary}</div>` : ''}
+
+    ${hasEducationForm ? `<div class="summary-section"><div class="summary-section-title">Form 8863 — Education Credits</div>${f8863Summary}</div>` : ''}
+
+    ${hasHSA ? `<div class="summary-section"><div class="summary-section-title">Form 8889 — Health Savings Account</div>${f8889Summary}</div>` : ''}
 
     <div class="summary-section">
       <div class="summary-section-title">Form 1120-S — S-Corporation Return (${scorpName})</div>
@@ -1206,6 +1444,8 @@ function generateAndShowSummary() {
       <div class="summary-section-title">Schedule K-1 &amp; Schedule E, Part II — Your Share</div>
       ${schE}
     </div>
+
+    ${hasDepreciation ? `<div class="summary-section"><div class="summary-section-title">Form 4562 — Depreciation and Amortization</div>${f4562Summary}</div>` : ''}
 
     <div class="summary-section">
       <div class="summary-section-title">${t.useItemized ? 'Schedule A — Itemized Deductions' : 'Schedule A — Not Needed'}</div>
@@ -1218,7 +1458,7 @@ function generateAndShowSummary() {
     </div>
 
     <div class="summary-section">
-      <div class="summary-section-title">Next Steps &amp; Filing Instructions</div>
+      <div class="summary-section-title">Free File Fillable Forms — How to File &amp; Next Steps</div>
       ${nextSteps}
     </div>`;
 }
