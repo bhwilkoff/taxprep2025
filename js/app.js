@@ -174,6 +174,45 @@ function calcLTCGTax(ltcgAmount, ordinaryTaxableIncome, brackets) {
 }
 
 // ============================================================
+//  FORM 1120-S — S-CORPORATION INCOME CALCULATION
+// ============================================================
+function calc1120S() {
+  const grossReceipts    = num('f1120s-gross-receipts');
+  const returns          = num('f1120s-returns');
+  const cogs             = num('f1120s-cogs');
+  const otherIncome      = num('f1120s-other-income');
+
+  const totalIncome      = grossReceipts - returns - cogs + otherIncome;  // Line 6
+
+  const officerComp      = num('f1120s-officer-comp');     // Line 7
+  const wages            = num('f1120s-wages');            // Line 8
+  const repairs          = num('f1120s-repairs');          // Line 9
+  const rents            = num('f1120s-rents');            // Line 11
+  const taxes            = num('f1120s-taxes');            // Line 12
+  const interest         = num('f1120s-interest');         // Line 13
+  const depreciation     = num('f1120s-depreciation');     // Line 14
+  const advertising      = num('f1120s-advertising');      // Line 16
+  const benefits         = num('f1120s-benefits');         // Line 18
+  const otherDeductions  = num('f1120s-other-deductions'); // Line 19
+
+  const totalDeductions  = officerComp + wages + repairs + rents + taxes
+                         + interest + depreciation + advertising + benefits
+                         + otherDeductions;               // Line 20
+
+  const ordinaryIncome   = totalIncome - totalDeductions; // Line 21
+
+  const ownershipPct     = clamp(num('scorp-ownership-pct') || 100, 0.01, 100);
+  const k1Box1           = ordinaryIncome * (ownershipPct / 100);
+
+  return {
+    grossReceipts, returns, cogs, otherIncome, totalIncome,
+    officerComp, wages, repairs, rents, taxes,
+    interest, depreciation, advertising, benefits, otherDeductions,
+    totalDeductions, ordinaryIncome, ownershipPct, k1Box1,
+  };
+}
+
+// ============================================================
 //  FORM 8962 — PREMIUM TAX CREDIT CALCULATION
 // ============================================================
 // 2025 HHS Federal Poverty Guidelines (48 contiguous states + DC)
@@ -229,7 +268,8 @@ function computeAll() {
 
   // ── Income ──
   const wages        = num('w2-box1');
-  const skorpK1      = num('k1-box1') + num('k1-box2');
+  const f1120s       = calc1120S();
+  const skorpK1      = f1120s.k1Box1 + num('k1-box2');
   const taxableInt   = num('interest-taxable') + num('interest-us-govt');
   const ordDiv       = num('div-ordinary');
   const qualDiv      = num('div-qualified');
@@ -393,7 +433,7 @@ function computeAll() {
   return {
     status, isHOH, stdDeduction, brackets, ltcgBrackets,
     // Income
-    wages, skorpK1, taxableInt, ordDiv, qualDiv,
+    f1120s, wages, skorpK1, taxableInt, ordDiv, qualDiv,
     ltcg, stcg, capGainNet, capGain1040,
     unemployment, stateTaxRefund, otherIncome, totalIncome,
     // Sch 1-A
@@ -500,6 +540,7 @@ function recalculate() {
     updateDeductionComparison(t);
     updateIRAMessage(t);
     updateCOPreview(t);
+    updateF1120SDisplay(t);
     updateForm8962Display(t);
   } catch(e) {
     console.error('Calculation error:', e);
@@ -565,6 +606,33 @@ function updateCOPreview(t) {
         </table>
       </div>
     </div>`;
+}
+
+function updateF1120SDisplay(t) {
+  const s = t.f1120s;
+  const setText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  setText('f1120s-disp-receipts',          fmt(s.grossReceipts));
+  setText('f1120s-disp-returns',           fmt(s.returns));
+  setText('f1120s-disp-cogs',              fmt(s.cogs));
+  setText('f1120s-disp-other-income',      fmt(s.otherIncome));
+  setText('f1120s-disp-total-income',      fmt(s.totalIncome));
+  setText('f1120s-disp-total-deductions',  fmt(s.totalDeductions));
+  const ordEl = document.getElementById('f1120s-disp-ordinary-income');
+  if (ordEl) {
+    ordEl.textContent = (s.ordinaryIncome >= 0 ? '' : '(') + fmt(Math.abs(s.ordinaryIncome)) + (s.ordinaryIncome < 0 ? ')' : '');
+    ordEl.style.color = s.ordinaryIncome >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  // Sync K-1 Box 1 hidden input and display
+  const k1Input = document.getElementById('k1-box1');
+  if (k1Input) k1Input.value = s.k1Box1.toFixed(2);
+  const k1Disp = document.getElementById('k1-box1-display');
+  if (k1Disp) {
+    k1Disp.textContent = (s.k1Box1 < 0 ? '(' : '') + fmt(Math.abs(s.k1Box1)) + (s.k1Box1 < 0 ? ')' : '');
+    k1Disp.style.color = s.k1Box1 >= 0 ? '' : 'var(--red)';
+  }
 }
 
 function updateForm8962Display(t) {
@@ -949,25 +1017,63 @@ function generateAndShowSummary() {
       ${tableRow('Total', 'Total Schedule 1-A deductions → Form 1040, Line 13', fmtLine(t.sch1a.total))}
     </table>` : '';
 
-  // ── SCHEDULE E (Part II — S-Corp) ──
+  // ── FORM 1120-S ──
   const scorpName = document.getElementById('scorp-name')?.value || 'Your S-Corporation';
   const scorpEIN  = document.getElementById('scorp-ein')?.value  || 'XX-XXXXXXX';
+  const fs = t.f1120s;
+  const f1120sSummary = `
+    <table class="form-line-table">
+      ${sectionRow(`Form 1120-S — U.S. Income Tax Return for an S Corporation (${scorpName}, EIN ${scorpEIN})`)}
+      ${sectionRow('Filing Notes')}
+      ${tableRow('Due date', '1120-S filing deadline', 'March 17, 2026 (or September 15 with Form 7004 extension)')}
+      ${tableRow('K-2 / K-3', 'International forms required?', 'No — K-2 and K-3 are only required for S-corps with foreign income, foreign shareholders, or international activities. Skip these entirely.')}
+      ${sectionRow('Income (Page 1, Lines 1–6)')}
+      ${tableRow('1a', 'Gross receipts or sales', fmtLine(fs.grossReceipts))}
+      ${fs.returns > 0 ? tableRow('1b', 'Returns and allowances', fmtLine(fs.returns)) : skipRow('Line 1b — Returns and allowances (none)')}
+      ${tableRow('1c', 'Balance (Line 1a − Line 1b)', fmtLine(fs.grossReceipts - fs.returns))}
+      ${fs.cogs > 0 ? tableRow('2', 'Cost of goods sold', fmtLine(fs.cogs)) : skipRow('Line 2 — Cost of goods sold (service business, leave blank)')}
+      ${tableRow('3', 'Gross profit (Line 1c − Line 2)', fmtLine(fs.grossReceipts - fs.returns - fs.cogs))}
+      ${fs.otherIncome !== 0 ? tableRow('5', 'Other income (loss)', fmtLine(fs.otherIncome)) : skipRow('Line 5 — Other income (none)')}
+      ${tableRow('6', 'Total income (loss)', fmtLine(fs.totalIncome), '', 'highlight')}
+      ${sectionRow('Deductions (Page 1, Lines 7–20)')}
+      ${fs.officerComp > 0 ? tableRow('7', 'Compensation of officers', fmtLine(fs.officerComp), 'Should match W-2 Box 1 you issued to yourself') : skipRow('Line 7 — Officer compensation (none)')}
+      ${fs.wages > 0 ? tableRow('8', 'Salaries and wages (non-officer)', fmtLine(fs.wages)) : skipRow('Line 8 — Salaries and wages (none)')}
+      ${fs.repairs > 0 ? tableRow('9', 'Repairs and maintenance', fmtLine(fs.repairs)) : skipRow('Line 9 — Repairs and maintenance (none)')}
+      ${fs.rents > 0 ? tableRow('11', 'Rents', fmtLine(fs.rents)) : skipRow('Line 11 — Rents (none)')}
+      ${fs.taxes > 0 ? tableRow('12', 'Taxes and licenses', fmtLine(fs.taxes), 'Include employer payroll taxes, state biz taxes, licenses') : skipRow('Line 12 — Taxes and licenses (none)')}
+      ${fs.interest > 0 ? tableRow('13', 'Interest expense', fmtLine(fs.interest)) : skipRow('Line 13 — Interest expense (none)')}
+      ${fs.depreciation > 0 ? tableRow('14', 'Depreciation (including Section 179, from Form 4562)', fmtLine(fs.depreciation)) : skipRow('Line 14 — Depreciation (none)')}
+      ${fs.advertising > 0 ? tableRow('16', 'Advertising', fmtLine(fs.advertising)) : skipRow('Line 16 — Advertising (none)')}
+      ${fs.benefits > 0 ? tableRow('18', 'Employee benefit programs', fmtLine(fs.benefits)) : skipRow('Line 18 — Employee benefit programs (none)')}
+      ${fs.otherDeductions > 0 ? tableRow('19', 'Other deductions (phone, internet, software, professional fees, etc.)', fmtLine(fs.otherDeductions), 'Attach a statement listing each category') : skipRow('Line 19 — Other deductions (none)')}
+      ${tableRow('20', 'Total deductions', fmtLine(fs.totalDeductions))}
+      ${fs.ordinaryIncome >= 0
+        ? tableRow('21', 'Ordinary business income', fmtLine(fs.ordinaryIncome), 'Goes to Schedule K, Line 1 → K-1 Box 1', 'highlight')
+        : tableRow('21', 'Ordinary business loss', fmtLine(fs.ordinaryIncome), 'Goes to Schedule K, Line 1 → K-1 Box 1 (negative)', 'owe')}
+      ${sectionRow('Schedule K — Shareholders\' Pro Rata Share Items (selected lines)')}
+      ${tableRow('K-1', 'Ordinary business income (loss)', fmtLine(fs.ordinaryIncome), 'Line 1 of Schedule K — flows to each shareholder\'s K-1 Box 1 proportionally')}
+      ${tableRow('K-16d', 'Distributions (Box 16, Code D)', fmtLine(num('k1-box16d')), 'Track against basis — not reported as income if basis is sufficient')}
+    </table>`;
+
+  // ── SCHEDULE K-1 + SCHEDULE E (Part II — S-Corp) ──
+  const k1Box1 = fs.k1Box1;
   const schE = `
     <table class="form-line-table">
+      ${sectionRow('Schedule K-1 (Form 1120-S) — Your Share')}
+      ${tableRow('Box 1', 'Ordinary business income (loss)', fmtLine(k1Box1), `1120-S Line 21 × ${fs.ownershipPct}% ownership`)}
+      ${num('k1-box2') !== 0 ? tableRow('Box 2', 'Net rental real estate income (loss)', fmtLine(num('k1-box2'))) : skipRow('Box 2 — Net rental real estate income (none)')}
+      ${tableRow('Box 17, Code AC', 'Gross receipts for Sec. 448(c)', fmtLine(fs.grossReceipts), 'Required if gross receipts ≥ $27M; otherwise informational only')}
       ${sectionRow('Schedule E (Form 1040), Part II — S-Corporation Income')}
       ${tableRow('28, Col A', 'Name of S-corporation', scorpName)}
       ${tableRow('28, Col B', 'Employer Identification Number (EIN)', scorpEIN)}
-      ${tableRow('28, Col C', 'Check if Form 8271 attached', 'Leave blank (only if tax shelter registration required)')}
       ${tableRow('28, Col D', 'Materially participated?', radio('material-participation') === 'yes' ? 'Yes — check the box' : 'No — do not check')}
-      ${t.skorpK1 >= 0
-        ? tableRow('28, Col E (income)', 'Nonpassive income from K-1 Box 1', fmtLine(t.skorpK1))
-        : tableRow('28, Col F (loss)', 'Allowable loss from K-1 Box 1', fmtLine(Math.abs(t.skorpK1)))}
-      ${t.skorpK1 >= 0
-        ? tableRow('32', 'Total S-corporation income (positive K-1)', fmtLine(t.skorpK1))
-        : tableRow('32', 'Total S-corporation loss (negative K-1)', fmtLine(Math.abs(t.skorpK1)))}
-      ${tableRow('41', 'Total income or (loss) from Schedule E → Schedule 1, Line 5', fmtLine(t.skorpK1))}
-      ${t.skorpK1 < 0 ? `${sectionRow('Important note on S-corp losses')}
-      ${tableRow('—', 'Basis limitation', 'Your loss is only deductible up to your basis in the S-corp. If you have not tracked basis, consult a CPA or IRS Pub. 3402 before filing.')}` : ''}
+      ${k1Box1 >= 0
+        ? tableRow('28, Col E', 'Nonpassive income from K-1 Box 1', fmtLine(k1Box1))
+        : tableRow('28, Col F', 'Allowable loss from K-1 Box 1', fmtLine(Math.abs(k1Box1)))}
+      ${tableRow('32 / 34', 'Total income (loss) from all S-corps', fmtLine(t.skorpK1))}
+      ${tableRow('41', 'Total Schedule E income (loss) → Schedule 1, Line 5', fmtLine(t.skorpK1))}
+      ${t.skorpK1 < 0 ? `${sectionRow('Basis limitation reminder')}
+      ${tableRow('—', 'Deductible only up to basis', 'Loss limited to your investment in the corp. See IRS Pub. 3402 if losses exceed your contributions.')}` : ''}
     </table>`;
 
   // ── SCHEDULE A (only if itemizing) ──
@@ -1064,9 +1170,10 @@ function generateAndShowSummary() {
       ${sectionRow('How to File — Free File Fillable Forms')}
       ${tableRow('Step 1', 'Go to IRS.gov/FreeFile', 'Start at IRS.gov/FreeFile (not the software companies\' sites directly)')}
       ${tableRow('Step 2', 'Select "Free File Fillable Forms"', 'No income limit. Available January 26, 2026.')}
-      ${tableRow('Step 3', 'Create an account and start Form 1040', 'You will need your prior-year AGI ($192,967) to verify your identity')}
-      ${tableRow('Step 4', 'Enter Federal forms in this order', hasF8962 ? 'Form 8962 → Schedule 2/3 → Schedule E → Schedule 1 → Schedule 1-A (if applicable) → Form 1040' : 'Schedule E → Schedule 1 → Schedule 1-A (if applicable) → Form 1040')}
-      ${tableRow('Step 5', 'File Colorado return', 'Colorado can be filed at Revenue.Colorado.gov (MyColorado portal) or through the same e-file submission')}
+      ${tableRow('Step 3', 'File Form 1120-S for your S-corporation', `Due March 17, 2026 for ${scorpName} (EIN ${scorpEIN}). File separately at IRS.gov or via tax software. Extension: Form 7004 (extends to September 15, 2026). After filing, you will have the finalized K-1 to attach to your personal return.`)}
+      ${tableRow('Step 4', 'Create an account and start Form 1040', 'You will need your prior-year AGI ($192,967) to verify your identity')}
+      ${tableRow('Step 5', 'Enter Federal forms in this order (personal return)', hasF8962 ? 'Form 8962 → Schedule 2/3 → Schedule E (K-1 data) → Schedule 1 → Schedule 1-A (if applicable) → Form 1040' : 'Schedule E (K-1 data) → Schedule 1 → Schedule 1-A (if applicable) → Form 1040')}
+      ${tableRow('Step 6', 'File Colorado return', 'Colorado can be filed at Revenue.Colorado.gov (MyColorado portal) or through the same e-file submission')}
       ${tableRow('Deadline', 'Filing deadline', 'April 15, 2026 for both federal and Colorado. Extension available (Form 4868 federal / DR 0158-I Colorado) — but an extension to file is NOT an extension to pay.')}
       ${tableRow('Payment', 'If you owe federal taxes', 'Pay at IRS.gov/payments (Direct Pay is free). Reference: tax year 2025, Form 1040')}
       ${tableRow('Payment', 'If you owe Colorado taxes', 'Pay at Revenue.Colorado.gov using e-check or credit card')}
@@ -1091,7 +1198,12 @@ function generateAndShowSummary() {
     ${hasF8962 ? `<div class="summary-section"><div class="summary-section-title">Form 8962 — Premium Tax Credit (Connect for Health Colorado)</div>${f8962Summary}</div>` : ''}
 
     <div class="summary-section">
-      <div class="summary-section-title">Schedule E, Part II — S-Corporation</div>
+      <div class="summary-section-title">Form 1120-S — S-Corporation Return (${scorpName})</div>
+      ${f1120sSummary}
+    </div>
+
+    <div class="summary-section">
+      <div class="summary-section-title">Schedule K-1 &amp; Schedule E, Part II — Your Share</div>
       ${schE}
     </div>
 
