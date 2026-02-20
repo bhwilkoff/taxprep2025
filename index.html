@@ -83,14 +83,6 @@
           </div>
         </div>
 
-        <div class="callout callout-warn mt-4">
-          <div class="callout-icon">📌</div>
-          <div class="callout-body">
-            <div class="callout-title">Two important facts about your situation</div>
-            <p><strong>Your alimony is not deductible.</strong> Because your divorce was finalized in January 2025, your agreement falls under post-2018 tax law. Alimony paid under agreements executed after December 31, 2018 is not deductible for the payer and not taxable income for the recipient. Your $7,410 in payments has zero effect on your federal or state taxes.</p>
-            <p style="margin-top:8px;"><strong>Your S-corporation uses Schedule E, not Schedule C.</strong> Schedule C is for sole proprietors only. As an S-corp owner, you report your share of the business income or loss using the K-1 your S-corp provides, which flows to Schedule E Part II. Your phone/internet deductions reduce the S-corp's income before the K-1 is generated.</p>
-          </div>
-        </div>
 
       </div>
       <div class="step-nav">
@@ -296,89 +288,253 @@
     </section>
 
     <!-- ─────────────────────────────────
-         STEP 3: S-Corp K-1
+         STEP 3: Form 1120-S + K-1
     ───────────────────────────────── -->
     <section class="step-panel" id="step-3" data-step="3">
       <div class="step-header">
         <div class="step-number">Step 3 of 11</div>
-        <div class="step-title">S-Corporation Business Income (Schedule K-1)</div>
-        <div class="step-subtitle">Your S-corp income or loss from your Schedule K-1 (Form 1120-S) → reports on Schedule E Part II</div>
+        <div class="step-title">S-Corporation Return (Form 1120-S) &amp; Schedule K-1</div>
+        <div class="step-subtitle">Enter your S-corp's income and expenses to compute ordinary income — this flows to your K-1 Box 1 and then to Schedule E Part II on your personal return</div>
       </div>
       <div class="step-body">
 
         <div class="callout callout-info">
           <div class="callout-icon">🏢</div>
           <div class="callout-body">
-            <div class="callout-title">How S-corp income works on your taxes</div>
-            <p>Your S-corporation filed its own tax return (Form 1120-S) and issued you a Schedule K-1 showing your share of the business results. You report that K-1 information on <strong>Schedule E Part II</strong> of your Form 1040 — this is different from Schedule C (which is for sole proprietors only).</p>
-            <p style="margin-top:8px;">Your phone and internet expenses are deducted <em>inside the S-corp's return</em> before the K-1 is generated, so those write-offs are already built into the K-1 number. You do not deduct them separately on your personal return.</p>
+            <div class="callout-title">How this works — and why you don't need a K-2</div>
+            <p>Your S-corporation must file its own tax return, <strong>Form 1120-S</strong>, by March 17, 2026 (or September 15 with an extension). The 1120-S calculates your business's ordinary income or loss, which flows to <strong>Schedule K-1 (Form 1120-S), Box 1</strong>. You then report that K-1 on <strong>Schedule E Part II</strong> of your personal Form 1040.</p>
+            <p style="margin-top:8px;"><strong>K-2 / K-3 are not required</strong> unless your S-corp has international activities, foreign partners, or foreign income and tax items. Since you have no international dealings, you can skip K-2 and K-3 entirely.</p>
+            <p style="margin-top:8px;">All business expenses (phone, internet, software, subscriptions, etc.) are deducted <em>inside the 1120-S</em> and reduce your Box 1 income. You do <em>not</em> deduct them separately on your personal return.</p>
           </div>
         </div>
 
+        <!-- Business info -->
         <div class="field-row">
           <div class="field-group">
             <label for="scorp-name">S-Corp business name</label>
-            <div class="field-hint">As it appears on your K-1 header. Used on Schedule E.</div>
+            <div class="field-hint">As shown on the 1120-S header and K-1. Used on Schedule E.</div>
             <input type="text" id="scorp-name" placeholder="e.g., Your Business Name, Inc.">
           </div>
           <div class="field-group">
-            <label for="scorp-ein">S-Corp EIN (Employer Identification Number)</label>
-            <div class="field-hint">9-digit number on your K-1, formatted XX-XXXXXXX. Required on Schedule E.</div>
+            <label for="scorp-ein">S-Corp EIN</label>
+            <div class="field-hint">9-digit number, formatted XX-XXXXXXX. Required on both 1120-S and Schedule E.</div>
             <input type="text" id="scorp-ein" placeholder="XX-XXXXXXX" maxlength="10">
           </div>
         </div>
+        <div class="field-row">
+          <div class="field-group" style="max-width:220px;">
+            <label for="scorp-ownership-pct">Your ownership percentage</label>
+            <div class="field-hint">100% if you are the sole owner. Enter as a whole number (e.g., 100).</div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="number" id="scorp-ownership-pct" min="1" max="100" step="0.01" value="100" oninput="recalculate()" style="width:90px; padding:0.5rem 0.75rem; border:1px solid var(--gray-200); border-radius:6px; font-size:1rem;">
+              <span style="color:var(--gray-500);">%</span>
+            </div>
+          </div>
+        </div>
 
+        <!-- ── FORM 1120-S INCOME ── -->
         <hr class="section-divider">
-        <div class="section-label">From your Schedule K-1 (Form 1120-S)</div>
+        <div class="section-label">Form 1120-S — Income (Page 1, Lines 1–6)</div>
 
-        <div class="field-group">
-          <label for="k1-box1">Box 1 — Ordinary business income (loss)</label>
-          <div class="field-hint">This is your share of the S-corp's net income or loss from normal business operations. If it's a loss (more expenses than income), enter it as a negative number (e.g., -500). This is the most important K-1 line for most small S-corps.</div>
-          <div class="money-input-wrap">
-            <input type="number" id="k1-box1" step="0.01" placeholder="0.00" oninput="recalculate()">
+        <div class="field-row">
+          <div class="field-group">
+            <label for="f1120s-gross-receipts">Line 1a — Gross receipts or sales</label>
+            <div class="field-hint">Total revenue your S-corp collected in 2025 — invoices paid, consulting fees, product sales, etc. Do not subtract any expenses here.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-gross-receipts" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="f1120s-returns">Line 1b — Returns and allowances</label>
+            <div class="field-hint">Refunds issued to customers or discounts given. Most service businesses enter 0.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-returns" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
           </div>
         </div>
 
         <div class="field-row">
           <div class="field-group">
+            <label for="f1120s-cogs">Line 2 — Cost of goods sold</label>
+            <div class="field-hint">Direct costs of products you resold or manufactured. If you are a service-only business (no inventory), enter 0.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-cogs" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="f1120s-other-income">Line 5 — Other income (loss)</label>
+            <div class="field-hint">Miscellaneous business income not from sales — e.g., forgiven debt, rental of business property. Enter 0 if none.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-other-income" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── FORM 1120-S DEDUCTIONS ── -->
+        <hr class="section-divider">
+        <div class="section-label">Form 1120-S — Deductions (Page 1, Lines 7–19)</div>
+        <div class="field-hint" style="margin-bottom:1rem;">Enter only amounts paid or incurred by the S-corporation. These reduce the business's taxable income before the K-1 is issued to you.</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="f1120s-officer-comp">Line 7 — Compensation of officers</label>
+            <div class="field-hint">W-2 salary you paid yourself as an officer/owner-employee. This must be a <em>reasonable salary</em> for the services you perform. This should match Box 1 of your own W-2 from the S-corp.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-officer-comp" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="f1120s-wages">Line 8 — Salaries and wages (non-officer employees)</label>
+            <div class="field-hint">W-2 wages paid to any employees other than yourself. Enter 0 if you have no other employees.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-wages" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="f1120s-repairs">Line 9 — Repairs and maintenance</label>
+            <div class="field-hint">Costs to keep business property in working order. Does not include improvements that add value (those are capitalized).</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-repairs" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="f1120s-rents">Line 11 — Rents</label>
+            <div class="field-hint">Office rent, equipment rental, co-working space fees paid by the S-corp.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-rents" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="f1120s-taxes">Line 12 — Taxes and licenses</label>
+            <div class="field-hint">Payroll taxes (employer share of Social Security/Medicare), state business taxes, business licenses, and fees. Do <em>not</em> include federal income tax.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-taxes" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="f1120s-interest">Line 13 — Interest expense</label>
+            <div class="field-hint">Interest on business loans or credit cards used for business purposes. Do not include personal mortgage interest.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-interest" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="f1120s-depreciation">Line 14 — Depreciation (including Section 179)</label>
+            <div class="field-hint">Depreciation on business assets (computers, equipment, vehicles). Section 179 lets you deduct the full cost in the year purchased. Calculated on Form 4562 — enter the total here.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-depreciation" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="f1120s-advertising">Line 16 — Advertising</label>
+            <div class="field-hint">Website hosting, online ads, marketing materials, social media promotions, and other advertising costs.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-advertising" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="f1120s-benefits">Line 18 — Employee benefit programs</label>
+            <div class="field-hint">Health insurance premiums paid for employees (including yourself as a >2% shareholder-employee — those go here, not Line 7). Also includes life insurance, disability insurance paid by the corp.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-benefits" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="f1120s-other-deductions">Line 19 — Other deductions</label>
+            <div class="field-hint">All other ordinary and necessary business expenses not listed above — phone, internet, software subscriptions, professional fees (accounting, legal), office supplies, travel, meals (50%), professional development, etc.</div>
+            <div class="money-input-wrap">
+              <input type="number" id="f1120s-other-deductions" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Live 1120-S summary -->
+        <div id="f1120s-summary" class="callout callout-info" style="margin-top:1.25rem;">
+          <div class="callout-body" style="font-size:0.85rem;">
+            <strong>Form 1120-S — Running Totals</strong>
+            <table style="width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:0.82rem;">
+              <tr><td style="padding:3px 0; color:var(--gray-600);">Gross receipts (Line 1a)</td><td style="text-align:right;" id="f1120s-disp-receipts">$0.00</td></tr>
+              <tr><td style="padding:3px 0; color:var(--gray-600);">− Returns &amp; allowances (Line 1b)</td><td style="text-align:right;" id="f1120s-disp-returns">$0.00</td></tr>
+              <tr><td style="padding:3px 0; color:var(--gray-600);">− Cost of goods sold (Line 2)</td><td style="text-align:right;" id="f1120s-disp-cogs">$0.00</td></tr>
+              <tr><td style="padding:3px 0; color:var(--gray-600);">+ Other income (Line 5)</td><td style="text-align:right;" id="f1120s-disp-other-income">$0.00</td></tr>
+              <tr style="border-top:1px solid var(--gray-300); font-weight:600;"><td style="padding:4px 0 3px;">Total income (Line 6)</td><td style="text-align:right;" id="f1120s-disp-total-income">$0.00</td></tr>
+              <tr><td style="padding:6px 0 3px; color:var(--gray-600);">Total deductions (Line 20)</td><td style="text-align:right;" id="f1120s-disp-total-deductions">$0.00</td></tr>
+              <tr style="border-top:1px solid var(--gray-300); font-weight:700;">
+                <td style="padding:5px 0 3px;">Ordinary business income / (loss) (Line 21)</td>
+                <td style="text-align:right; font-size:1.05em;" id="f1120s-disp-ordinary-income">$0.00</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── SCHEDULE K-1 ── -->
+        <hr class="section-divider">
+        <div class="section-label">Schedule K-1 (Form 1120-S) — Your Share Flowing to Your Personal Return</div>
+        <div class="field-hint" style="margin-bottom:1rem;">The amounts below are automatically calculated from the 1120-S above based on your ownership percentage. Box 1 will appear on your Schedule K-1 and then on Schedule E Part II of your Form 1040.</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Box 1 — Ordinary business income (loss)</label>
+            <div class="field-hint">Auto-computed: Line 21 of Form 1120-S × your ownership %. This flows to Schedule E, Part II.</div>
+            <div style="padding:0.6rem 0.75rem; background:var(--gray-50); border:1px solid var(--gray-200); border-radius:6px; font-size:1rem; font-variant-numeric:tabular-nums; color:var(--gray-700);" id="k1-box1-display">$0.00</div>
+            <!-- Hidden input keeps the value in sync for computeAll() -->
+            <input type="hidden" id="k1-box1" value="0">
+          </div>
+          <div class="field-group">
             <label for="k1-box2">Box 2 — Net rental real estate income (loss)</label>
-            <div class="field-hint">Usually 0 for a service/consulting S-corp. Enter 0 if blank.</div>
+            <div class="field-hint">Usually $0 for a service/consulting S-corp. Enter 0 if blank on your K-1.</div>
             <div class="money-input-wrap">
               <input type="number" id="k1-box2" step="0.01" placeholder="0.00" oninput="recalculate()">
             </div>
           </div>
-          <div class="field-group">
+        </div>
+
+        <div class="field-row">
+          <div class="field-group" style="max-width:280px;">
             <label for="k1-box16d">Box 16, Code D — Distributions</label>
-            <div class="field-hint">Cash or property distributions paid to you by the S-corp. These are generally <em>not</em> taxable income if you have sufficient basis. Enter 0 if none.</div>
+            <div class="field-hint">Cash or property distributions paid to you. Generally not taxable income if you have sufficient basis.</div>
             <div class="money-input-wrap">
               <input type="number" id="k1-box16d" min="0" step="0.01" placeholder="0.00">
             </div>
           </div>
         </div>
 
-        <div class="field-group">
+        <!-- Material participation -->
+        <div class="field-group" style="margin-top:0.75rem;">
           <label>Did you materially participate in the S-corporation in 2025?</label>
-          <div class="field-hint">Material participation means you were involved in the business on a regular, continuous, and substantial basis — e.g., you actively managed it, used it for your phone/internet work, spent more than 100 hours on it during the year, etc. Most S-corp owners who run their own business qualify.</div>
+          <div class="field-hint">Material participation means you were involved regularly, continuously, and substantially — e.g., you actively managed the business, spent more than 500 hours on it, or it was your principal business activity.</div>
           <div class="radio-group">
             <label class="radio-option">
               <input type="radio" name="material-participation" value="yes" checked onchange="recalculate()">
               <div>
-                <div class="option-label">Yes — I was actively involved in running the business</div>
-                <div class="option-desc">Any loss from Box 1 will directly reduce your taxable income (subject to your basis in the S-corp).</div>
+                <div class="option-label">Yes — I actively ran the business</div>
+                <div class="option-desc">Any loss from Box 1 directly reduces your taxable income (subject to basis limitations).</div>
               </div>
             </label>
             <label class="radio-option">
               <input type="radio" name="material-participation" value="no" onchange="recalculate()">
               <div>
                 <div class="option-label">No — I was a passive investor only</div>
-                <div class="option-desc">Any loss would be a "passive activity loss" and can only offset passive activity income — it cannot reduce your W-2 wages. This would require Form 8582.</div>
+                <div class="option-desc">Losses are passive activity losses, can only offset passive income. Form 8582 required.</div>
               </div>
             </label>
           </div>
           <div class="callout callout-warn" style="margin-top:10px;">
             <div class="callout-icon">⚠️</div>
             <div class="callout-body" style="font-size:0.85rem;">
-              <strong>Basis limitation:</strong> S-corp losses can only be deducted up to your <em>basis</em> in the corporation (your initial investment plus any loans you've personally made to the S-corp, adjusted for prior years' income and losses). If your cumulative losses have exceeded your investment, some of the loss may be suspended. If you've had prior year K-1 losses that exceeded your contributions, consult the IRS guidance on S-corp basis before filing.
+              <strong>Basis limitation:</strong> S-corp losses can only be deducted up to your basis (initial investment plus loans to the corp, adjusted for prior years). If losses have exceeded your basis, consult IRS Publication 3402 or a CPA before filing.
             </div>
           </div>
         </div>
@@ -409,6 +565,7 @@
         </div>
 
         <div class="section-label">Interest Income (Form 1099-INT)</div>
+        <div class="field-hint" style="margin-bottom:0.75rem;">If your total interest <strong>or</strong> total ordinary dividends exceed $1,500, you are required to attach <strong>Schedule B</strong> to your return listing each payer. Free File Fillable Forms supports Schedule B directly — you'll enter each 1099-INT and 1099-DIV payer separately.</div>
 
         <div class="field-row">
           <div class="field-group">
@@ -453,8 +610,10 @@
         <div class="callout callout-warn">
           <div class="callout-icon">📊</div>
           <div class="callout-body">
-            <div class="callout-title">Did you sell any stocks, funds, or other investments in 2025?</div>
-            If yes, you'll need to complete a full Schedule D based on your 1099-B from your brokerage. Enter your <strong>net</strong> capital gain or loss here (total proceeds minus total cost basis). <strong>Long-term gains (assets held &gt;1 year) are taxed at preferential rates (0%, 15%, or 20%).</strong> Short-term gains are taxed as ordinary income.
+            <div class="callout-title">Schedule D + Form 8949 required if you sold investments</div>
+            <p>Each individual sale transaction must first be listed on <strong>Form 8949</strong> (Sales and Other Dispositions of Capital Assets) — one row per sale, showing description, date acquired, date sold, proceeds, cost basis, and gain/loss. Form 8949 totals then flow to <strong>Schedule D</strong>, which summarizes long-term and short-term capital gains and losses, and the Schedule D net total flows to <strong>Form 1040, Line 7</strong>.</p>
+            <p style="margin-top:6px;">Enter the <strong>net totals</strong> below. This tool uses those net amounts for your tax calculation. Your brokerage's 1099-B lists each transaction — use that to complete Form 8949 and Schedule D when you file.</p>
+            <p style="margin-top:6px;"><strong>Long-term gains (held &gt; 1 year)</strong> are taxed at preferential rates (0%, 15%, or 20%). <strong>Short-term gains (held ≤ 1 year)</strong> are taxed as ordinary income.</p>
           </div>
         </div>
 
@@ -941,31 +1100,81 @@
 
         <!-- Premium Tax Credit -->
         <div class="field-group">
-          <label>Did you buy health insurance through the Healthcare.gov Marketplace in 2025?</label>
-          <div class="field-hint">If yes, you should have received Form 1095-A. You need to reconcile any advance payments with the actual Premium Tax Credit using Form 8962.</div>
+          <label>Did you buy health insurance through a Health Insurance Marketplace in 2025?</label>
+          <div class="field-hint">This includes Connect for Health Colorado (Colorado's state exchange) and Healthcare.gov. If yes, you should have received Form 1095-A and need to complete Form 8962 to reconcile any advance Premium Tax Credit payments.</div>
           <div class="radio-group">
             <label class="radio-option">
               <input type="radio" name="has-marketplace" value="no" checked onchange="toggleMarketplace()">
-              <div><div class="option-label">No — I have employer coverage or another non-Marketplace plan</div></div>
+              <div><div class="option-label">No — I have employer coverage, Medicare/Medicaid, or another non-Marketplace plan</div></div>
             </label>
             <label class="radio-option">
               <input type="radio" name="has-marketplace" value="yes" onchange="toggleMarketplace()">
-              <div><div class="option-label">Yes — I had Marketplace health insurance and received Form 1095-A</div></div>
+              <div><div class="option-label">Yes — I purchased coverage through Connect for Health Colorado or Healthcare.gov and received Form 1095-A</div></div>
             </label>
           </div>
           <div class="conditional-section" id="marketplace-section">
-            <div class="callout callout-warn">
+            <div class="callout callout-info" style="margin-bottom:1rem;">
               <div class="callout-body" style="font-size:0.85rem;">
-                Marketplace coverage requires completing Form 8962. The net Premium Tax Credit (or repayment) will be entered on Schedule 3, Line 9 or Schedule 2, Line 2. Please complete Form 8962 separately using your Form 1095-A, then enter the result below.
+                <strong>Form 8962 — Premium Tax Credit</strong><br>
+                Enter the three annual totals from your Form 1095-A (add up all 12 months for each column). This tool will calculate Form 8962 for you and determine your net credit or repayment amount, which flows to Schedule 3, Line 9 or Schedule 2, Line 2.
               </div>
             </div>
+
+            <div class="section-label" style="margin-top:0.5rem;">Form 1095-A — Amounts from Your Marketplace Statement</div>
+
             <div class="field-row">
               <div class="field-group">
-                <label for="ptc-net">Net Premium Tax Credit from Form 8962, Line 26</label>
-                <div class="field-hint">Positive = credit (refund); negative = repayment (you owe more).</div>
+                <label for="f1095a-enroll-prem">Column A — Annual Enrollment Premium</label>
+                <div class="field-hint">Add up all 12 monthly amounts in Column A (your plan's full monthly premium).</div>
                 <div class="money-input-wrap">
-                  <input type="number" id="ptc-net" step="0.01" placeholder="0.00" oninput="recalculate()">
+                  <input type="number" id="f1095a-enroll-prem" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
                 </div>
+              </div>
+              <div class="field-group">
+                <label for="f1095a-slcsp">Column B — Annual SLCSP Premium</label>
+                <div class="field-hint">Add up all 12 monthly amounts in Column B (the benchmark Silver plan for your area). If any months show $0, visit <strong>healthcare.gov/tax-tool</strong> to look up the correct SLCSP for those months.</div>
+                <div class="money-input-wrap">
+                  <input type="number" id="f1095a-slcsp" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="f1095a-aptc">Column C — Annual Advance PTC Paid</label>
+                <div class="field-hint">Add up all 12 monthly amounts in Column C (the government subsidy paid directly to your insurer each month).</div>
+                <div class="money-input-wrap">
+                  <input type="number" id="f1095a-aptc" min="0" step="0.01" placeholder="0.00" oninput="recalculate()">
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="f8962-family-size">Tax Household Size (Line 1)</label>
+                <div class="field-hint">Count yourself plus any dependents you claim on this return. Used to look up the Federal Poverty Line.</div>
+                <input type="number" id="f8962-family-size" min="1" max="15" step="1" value="1" oninput="recalculate()" style="width:90px; padding:0.5rem 0.75rem; border:1px solid var(--gray-200); border-radius:6px; font-size:1rem;">
+              </div>
+            </div>
+
+            <!-- Auto-computed Form 8962 results -->
+            <div id="form8962-results" class="callout callout-info" style="margin-top:1.25rem; display:none;">
+              <div class="callout-body" style="font-size:0.85rem;">
+                <strong>Form 8962 — Calculated Results</strong>
+                <table style="width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:0.82rem;">
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Household Income / MAGI (Line 3)</td><td style="text-align:right; font-variant-numeric:tabular-nums;" id="f8962-magi">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Federal Poverty Line for your household (Line 4)</td><td style="text-align:right;" id="f8962-fpl">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Income as % of Federal Poverty Line (Line 5)</td><td style="text-align:right;" id="f8962-fpl-pct">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Applicable Figure / Contribution % (Line 7)</td><td style="text-align:right;" id="f8962-app-pct">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual Contribution Amount (Line 8a)</td><td style="text-align:right;" id="f8962-contrib">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual Enrollment Premium — 1095-A Col A (Line 11a)</td><td style="text-align:right;" id="f8962-enroll">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual SLCSP Premium — 1095-A Col B (Line 11b)</td><td style="text-align:right;" id="f8962-slcsp-disp">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Annual Maximum PTC (Line 11d)</td><td style="text-align:right;" id="f8962-max-ptc">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Your Annual PTC (Line 24)</td><td style="text-align:right;" id="f8962-annual-ptc">—</td></tr>
+                  <tr><td style="padding:3px 0; color:var(--gray-600);">Advance PTC Already Paid (Line 25)</td><td style="text-align:right;" id="f8962-aptc-disp">—</td></tr>
+                  <tr style="border-top:1px solid var(--gray-300); font-weight:700;">
+                    <td style="padding:5px 0 3px;">Net PTC — credit (+) or repayment (−) &nbsp;<span style="font-weight:400;">(Line 26)</span></td>
+                    <td style="text-align:right;" id="f8962-net-ptc">—</td>
+                  </tr>
+                </table>
+                <div style="margin-top:0.5rem; color:var(--gray-500); font-size:0.78rem;">Calculation uses 2025 IRS Table 2 applicable percentages and 2025 HHS Federal Poverty Guidelines. Verify final amounts against the official Form 8962 instructions before filing.</div>
               </div>
             </div>
           </div>
@@ -1144,18 +1353,18 @@
     <div class="sidebar-card">
       <div class="sidebar-card-header">Steps</div>
       <div class="steps-nav" id="step-navigator">
-        <div class="step-nav-item active" data-nav="0"><div class="step-nav-dot">✦</div>Welcome</div>
-        <div class="step-nav-item" data-nav="1"><div class="step-nav-dot">1</div>Filing Status</div>
-        <div class="step-nav-item" data-nav="2"><div class="step-nav-dot">2</div>W-2 Income</div>
-        <div class="step-nav-item" data-nav="3"><div class="step-nav-dot">3</div>S-Corp K-1</div>
-        <div class="step-nav-item" data-nav="4"><div class="step-nav-dot">4</div>Other Income</div>
-        <div class="step-nav-item" data-nav="5"><div class="step-nav-dot">5</div>New 2025 Deductions</div>
-        <div class="step-nav-item" data-nav="6"><div class="step-nav-dot">6</div>Adjustments</div>
-        <div class="step-nav-item" data-nav="7"><div class="step-nav-dot">7</div>Deductions</div>
-        <div class="step-nav-item" data-nav="8"><div class="step-nav-dot">8</div>Credits</div>
-        <div class="step-nav-item" data-nav="9"><div class="step-nav-dot">9</div>Colorado</div>
-        <div class="step-nav-item" data-nav="10"><div class="step-nav-dot">10</div>Review</div>
-        <div class="step-nav-item" data-nav="11"><div class="step-nav-dot">✓</div>Summary</div>
+        <div class="step-nav-item active" data-nav="0" onclick="goToStep(0)"><div class="step-nav-dot">✦</div>Welcome</div>
+        <div class="step-nav-item" data-nav="1" onclick="goToStep(1)"><div class="step-nav-dot">1</div>Filing Status</div>
+        <div class="step-nav-item" data-nav="2" onclick="goToStep(2)"><div class="step-nav-dot">2</div>W-2 Income</div>
+        <div class="step-nav-item" data-nav="3" onclick="goToStep(3)"><div class="step-nav-dot">3</div>S-Corp K-1</div>
+        <div class="step-nav-item" data-nav="4" onclick="goToStep(4)"><div class="step-nav-dot">4</div>Other Income</div>
+        <div class="step-nav-item" data-nav="5" onclick="goToStep(5)"><div class="step-nav-dot">5</div>New 2025 Deductions</div>
+        <div class="step-nav-item" data-nav="6" onclick="goToStep(6)"><div class="step-nav-dot">6</div>Adjustments</div>
+        <div class="step-nav-item" data-nav="7" onclick="goToStep(7)"><div class="step-nav-dot">7</div>Deductions</div>
+        <div class="step-nav-item" data-nav="8" onclick="goToStep(8)"><div class="step-nav-dot">8</div>Credits</div>
+        <div class="step-nav-item" data-nav="9" onclick="goToStep(9)"><div class="step-nav-dot">9</div>Colorado</div>
+        <div class="step-nav-item" data-nav="10" onclick="goToStep(10)"><div class="step-nav-dot">10</div>Review</div>
+        <div class="step-nav-item" data-nav="11" onclick="goToStep(11)"><div class="step-nav-dot">✓</div>Summary</div>
       </div>
     </div>
 
